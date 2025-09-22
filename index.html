@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" class="">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
@@ -12,10 +12,14 @@
         const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
         const theme = savedTheme || (prefersDark ? 'dark' : 'light');
         
+        // Remove any existing theme classes
+        document.documentElement.classList.remove('dark', 'light');
+        
+        // Add the correct theme class
         if (theme === 'dark') {
           document.documentElement.classList.add('dark');
         } else {
-          document.documentElement.classList.remove('dark');
+          document.documentElement.classList.add('light');
         }
       })();
     </script>
