@@ -66,7 +66,7 @@ const renderMarkdownWithCode = (text) => {
 
 function MarkdownRenderer({ content }) {
   return (
-    <div className="border border-gray-300 rounded p-4 my-6 prose prose-sm dark:prose-invert">
+    <div className="border dark:border-gray-700 rounded p-4 my-6 prose prose-sm dark:prose-invert">
       {renderMarkdownWithCode(content)}
     </div>
   );

@@ -1,7 +1,7 @@
 import React from 'react'
 import { Routes, Route } from 'react-router-dom'
 import Dashboard from '../pages/Dashboard'
-import SolutionsList from '../pages/Solution'
+import SolutionsList from '../pages/SolutionsList'
 import Tags from '../pages/Tags'
 import Favorites from '../pages/Favorites'
 import Profile from '../pages/Profile'
