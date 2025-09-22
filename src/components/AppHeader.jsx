@@ -2,20 +2,28 @@ import React, { useEffect, useState } from 'react'
 import { UserCircle, Sun, Moon } from 'lucide-react'
 
 function AppHeader() {
-  // ✅ Initialize from the HTML <html> element
+  // Initialize theme from localStorage or default to light
   const [theme, setTheme] = useState(() => {
-    return document.documentElement.classList.contains("dark")
-      ? "dark"
-      : "light";
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) {
+      return savedTheme;
+    }
+    // Check system preference
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      return 'dark';
+    }
+    return 'light';
   });
 
   useEffect(() => {
-    const root = document.documentElement
+    const root = document.documentElement;
     if (theme === 'light') {
-      root.classList.remove('dark')
+      root.classList.remove('dark');
     } else {
-      root.classList.add('dark')
+      root.classList.add('dark');
     }
+    // Save theme preference to localStorage
+    localStorage.setItem('theme', theme);
   }, [theme]);
 
   return (
