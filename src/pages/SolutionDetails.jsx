@@ -64,10 +64,14 @@ function SolutionDetails() {
       </div>
       <section> 
         {solution.tags.map((tag) => (
-          <span key={tag} className="inline-block text-sm px-3 py-1 rounded-full mr-2 mb-2 border border-gray-400 hover:bg-gray-100 cursor-pointer">
+          <Link
+            key={tag}
+            to={`/solution?tag=${encodeURIComponent(tag)}`}
+            className="inline-block text-sm px-3 py-1 rounded-full mr-2 mb-2 border border-gray-400 hover:bg-blue-50 dark:hover:bg-blue-900 hover:border-blue-300 dark:hover:border-blue-600 hover:text-blue-700 dark:hover:text-blue-300 cursor-pointer transition-colors"
+          >
             <Tag className="inline-block size-3 mr-1" />
             {tag}
-          </span>
+          </Link>
         ))}
       </section>
       <section className="mb-6 mt-4">
