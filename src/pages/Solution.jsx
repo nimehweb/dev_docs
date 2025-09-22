@@ -1,61 +1,306 @@
-import React from 'react'
-import { Link } from 'react-router-dom'
-import {ExternalLink, Calendar, Tag} from "lucide-react"
+import React, { useState, useEffect } from 'react'
+import { Link, useSearchParams } from 'react-router-dom'
+import { ExternalLink, Calendar, Tag, Search, Filter, X } from "lucide-react"
 import useSolutionsStore from '../store/solutionsStore'
 
 function SolutionsList() {
   const solutions = useSolutionsStore((state) => state.solutions)
+  const [searchParams, setSearchParams] = useSearchParams()
   
+  // Get initial values from URL params
+  const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '')
+  const [selectedTag, setSelectedTag] = useState(searchParams.get('tag') || '')
+  const [statusFilter, setStatusFilter] = useState(searchParams.get('status') || 'all')
+  const [difficultyFilter, setDifficultyFilter] = useState(searchParams.get('difficulty') || 'all')
+  const [sortBy, setSortBy] = useState(searchParams.get('sort') || 'newest')
+
+  // Update URL params when filters change
+  useEffect(() => {
+    const params = new URLSearchParams()
+    if (searchTerm) params.set('search', searchTerm)
+    if (selectedTag) params.set('tag', selectedTag)
+    if (statusFilter !== 'all') params.set('status', statusFilter)
+    if (difficultyFilter !== 'all') params.set('difficulty', difficultyFilter)
+    if (sortBy !== 'newest') params.set('sort', sortBy)
+    
+    setSearchParams(params)
+  }, [searchTerm, selectedTag, statusFilter, difficultyFilter, sortBy, setSearchParams])
+
+  // Get all unique tags for filter dropdown
+  const allTags = [...new Set(solutions.flatMap(solution => solution.tags))].sort()
+
+  // Filter and sort solutions
+  let filteredSolutions = solutions.filter(solution => {
+    const matchesSearch = solution.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         solution.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         solution.problemDescription?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         solution.solutionSteps?.toLowerCase().includes(searchTerm.toLowerCase())
+    
+    const matchesTag = !selectedTag || solution.tags.includes(selectedTag)
+    const matchesStatus = statusFilter === 'all' || solution.status === statusFilter
+    const matchesDifficulty = difficultyFilter === 'all' || solution.difficulty === difficultyFilter
+
+    return matchesSearch && matchesTag && matchesStatus && matchesDifficulty
+  })
+
+  // Sort solutions
+  filteredSolutions.sort((a, b) => {
+    switch (sortBy) {
+      case 'newest':
+        return new Date(b.date) - new Date(a.date)
+      case 'oldest':
+        return new Date(a.date) - new Date(b.date)
+      case 'title':
+        return a.title.localeCompare(b.title)
+      case 'status':
+        return a.status.localeCompare(b.status)
+      default:
+        return new Date(b.date) - new Date(a.date)
+    }
+  })
+
+  const clearFilters = () => {
+    setSearchTerm('')
+    setSelectedTag('')
+    setStatusFilter('all')
+    setDifficultyFilter('all')
+    setSortBy('newest')
+  }
+
+  const hasActiveFilters = searchTerm || selectedTag || statusFilter !== 'all' || difficultyFilter !== 'all' || sortBy !== 'newest'
+
   return (
-    <div className='p-6'>
-        <div className='flex justify-between items-center mb-6'>
+    <div className='p-6 bg-gray-50 dark:bg-slate-800 min-h-full'>
+      <div className='flex justify-between items-center mb-6'>
+        <div>
+          <h1 className='text-3xl font-bold mb-1 text-gray-900 dark:text-white'>Solutions</h1>
+          <p className="text-gray-600 dark:text-gray-300">Browse and manage your problem-solution documentation</p>
+        </div>
+        <Link 
+          to="add-new"
+          className='px-4 py-2 text-white bg-blue-600 hover:bg-blue-700 cursor-pointer text-center rounded-lg transition-colors'
+        >
+          + Add New Solution
+        </Link>
+      </div>
+
+      {/* Search and Filter Section */}
+      <div className="bg-white dark:bg-slate-900 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 mb-6">
+        {/* Search Bar */}
+        <div className="relative mb-4">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Search solutions by title, description, or content..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          />
+        </div>
+
+        {/* Filters */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+          {/* Tag Filter */}
           <div>
-            <h1 className='text-2xl font-bold mb-1'>Solutions</h1>
-            <p>Browse and Manage Problem-Solution documentation</p>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tag</label>
+            <select
+              value={selectedTag}
+              onChange={(e) => setSelectedTag(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="">All Tags</option>
+              {allTags.map(tag => (
+                <option key={tag} value={tag}>{tag}</option>
+              ))}
+            </select>
           </div>
-          <div className='px-4 py-2 text-white bg-slate-500 hover:bg-slate-400 cursor-pointer text-center rounded-lg '>
-            <Link to="add-new">
-              + Add New Solution
-            </Link>
+
+          {/* Status Filter */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Status</label>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="all">All Status</option>
+              <option value="open">Open</option>
+              <option value="resolved">Resolved</option>
+            </select>
+          </div>
+
+          {/* Difficulty Filter */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Difficulty</label>
+            <select
+              value={difficultyFilter}
+              onChange={(e) => setDifficultyFilter(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="all">All Difficulty</option>
+              <option value="easy">Easy</option>
+              <option value="medium">Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+          </div>
+
+          {/* Sort By */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Sort By</label>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="newest">Newest First</option>
+              <option value="oldest">Oldest First</option>
+              <option value="title">Title A-Z</option>
+              <option value="status">Status</option>
+            </select>
+          </div>
+
+          {/* Clear Filters */}
+          <div className="flex items-end">
+            {hasActiveFilters && (
+              <button
+                onClick={clearFilters}
+                className="w-full px-3 py-2 text-gray-600 dark:text-gray-400 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors flex items-center justify-center"
+              >
+                <X className="h-4 w-4 mr-1" />
+                Clear
+              </button>
+            )}
           </div>
         </div>
-        <div>
-          {solutions.length === 0 ? (
-            <p>No solutions available. Click "Add New Solution" to create one.</p>
-          ):
-          (
-            solutions.map((solution, index) => (
-              <div key = {index} className='border border-gray-300 px-4 py-6 rounded-lg mb-4 '>
-                <div className='flex justify-between items-center'>
-                  <h2 className='text-xl font-semibold'>{solution.title}</h2>
-                  <div className = "flex gap-2 items-center">
-                    <div className='py-1 px-3  bg-slate-300 rounded-lg text-sm'> {solution.status} </div>
-                    <Link to={`/solution/${solution.id}`}>
-                      <span className='p-2 border border-gray-400 rounded-lg flex items-center justify-center hover:bg-slate-200 cursor-pointer'>
-                      <ExternalLink className='size-4'/>
+
+        {/* Active Filters Display */}
+        {hasActiveFilters && (
+          <div className="mt-4 flex flex-wrap gap-2">
+            {searchTerm && (
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
+                Search: "{searchTerm}"
+                <button onClick={() => setSearchTerm('')} className="ml-2 hover:text-blue-600">
+                  <X className="h-3 w-3" />
+                </button>
+              </span>
+            )}
+            {selectedTag && (
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">
+                Tag: {selectedTag}
+                <button onClick={() => setSelectedTag('')} className="ml-2 hover:text-green-600">
+                  <X className="h-3 w-3" />
+                </button>
+              </span>
+            )}
+            {statusFilter !== 'all' && (
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-orange-100 dark:bg-orange-900 text-orange-800 dark:text-orange-200">
+                Status: {statusFilter}
+                <button onClick={() => setStatusFilter('all')} className="ml-2 hover:text-orange-600">
+                  <X className="h-3 w-3" />
+                </button>
+              </span>
+            )}
+            {difficultyFilter !== 'all' && (
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200">
+                Difficulty: {difficultyFilter}
+                <button onClick={() => setDifficultyFilter('all')} className="ml-2 hover:text-purple-600">
+                  <X className="h-3 w-3" />
+                </button>
+              </span>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Results Summary */}
+      <div className="mb-4">
+        <p className="text-gray-600 dark:text-gray-300">
+          Showing {filteredSolutions.length} of {solutions.length} solutions
+          {hasActiveFilters && ' (filtered)'}
+        </p>
+      </div>
+
+      {/* Solutions List */}
+      <div>
+        {filteredSolutions.length === 0 ? (
+          <div className="bg-white dark:bg-slate-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-12 text-center">
+            {solutions.length === 0 ? (
+              <>
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No solutions yet</h3>
+                <p className="text-gray-500 dark:text-gray-400 mb-4">
+                  Start documenting your problem-solving journey by creating your first solution.
+                </p>
+                <Link
+                  to="add-new"
+                  className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  Create First Solution
+                </Link>
+              </>
+            ) : (
+              <>
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No solutions match your filters</h3>
+                <p className="text-gray-500 dark:text-gray-400 mb-4">
+                  Try adjusting your search terms or filters to find what you're looking for.
+                </p>
+                <button
+                  onClick={clearFilters}
+                  className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors"
+                >
+                  Clear All Filters
+                </button>
+              </>
+            )}
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {filteredSolutions.map((solution) => (
+              <div key={solution.id} className='bg-white dark:bg-slate-900 border border-gray-200 dark:border-gray-700 px-6 py-6 rounded-lg shadow-sm hover:shadow-md transition-shadow'>
+                <div className='flex justify-between items-start mb-4'>
+                  <h2 className='text-xl font-semibold text-gray-900 dark:text-white'>{solution.title}</h2>
+                  <div className="flex gap-2 items-center">
+                    <span className={`py-1 px-3 rounded-lg text-sm font-medium ${
+                      solution.status === 'resolved' 
+                        ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
+                        : 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200'
+                    }`}>
+                      {solution.status}
                     </span>
+                    <span className="py-1 px-3 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium">
+                      {solution.difficulty}
+                    </span>
+                    <Link to={`/solution/${solution.id}`}>
+                      <span className='p-2 border border-gray-300 dark:border-gray-600 rounded-lg flex items-center justify-center hover:bg-gray-50 dark:hover:bg-slate-800 cursor-pointer transition-colors'>
+                        <ExternalLink className='size-4'/>
+                      </span>
                     </Link>
                   </div>
                 </div>
-                <div>
-                  <p className='mt-2 text-gray-600 text-lg'>{solution.description}</p>
-                </div>
-                <div className='mt-4'>
+                
+                <p className='text-gray-600 dark:text-gray-300 text-lg mb-4'>{solution.description}</p>
+                
+                <div className='flex flex-wrap gap-2 mb-4'>
                   {solution.tags.map((tag, tagIndex) => (
-                    <span key={tagIndex} className='inline-block text-xs px-2 py-1 rounded-lg mr-2 mb-2 border border-gray-400 text-gray-700'>
-                      <Tag className='size-3 inline-block mr-1'/>
+                    <Link
+                      key={tagIndex}
+                      to={`/solution?tag=${encodeURIComponent(tag)}`}
+                      className='inline-flex items-center text-xs px-2 py-1 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900 hover:border-blue-300 dark:hover:border-blue-600 hover:text-blue-700 dark:hover:text-blue-300 transition-colors cursor-pointer'
+                    >
+                      <Tag className='size-3 mr-1'/>
                       {tag}
-                    </span>
+                    </Link>
                   ))}
                 </div>
-                <div className ="mt-2">
-                  <div className='text-sm text-gray-500 flex gap-2 items-center'><Calendar className='size-4'/> <p>Created : {solution.date}</p></div>
+                
+                <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
+                  <Calendar className='size-4 mr-2'/>
+                  <span>Created: {new Date(solution.date).toLocaleDateString()}</span>
                 </div>
               </div>
-            )) 
-          )
-          }
-        </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   )
 }
