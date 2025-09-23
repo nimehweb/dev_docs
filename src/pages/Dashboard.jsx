@@ -71,10 +71,10 @@ function Dashboard() {
   ]
 
   return (
-    <div className="p-6 bg-gray-50 dark:bg-slate-800 min-h-full">
+    <div className="p-4 lg:p-6 bg-gray-50 dark:bg-slate-800 min-h-full">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+        <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white mb-2">
           Dashboard
         </h1>
         <p className="text-gray-600 dark:text-gray-300">
@@ -137,19 +137,19 @@ function Dashboard() {
 
       {/* Quick Actions */}
       <div className="mb-8">
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Quick Actions</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <h2 className="text-lg lg:text-xl font-semibold text-gray-900 dark:text-white mb-4">Quick Actions</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {quickActions.map((action, index) => (
             <Link
               key={index}
               to={action.link}
-              className={`${action.color} text-white p-6 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 transform hover:scale-105`}
+              className={`${action.color} text-white p-4 lg:p-6 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 transform hover:scale-105`}
             >
-              <div className="flex items-center mb-3">
+              <div className="flex items-center mb-2 lg:mb-3">
                 {action.icon}
-                <h3 className="ml-3 font-semibold">{action.title}</h3>
+                <h3 className="ml-3 font-semibold text-sm lg:text-base">{action.title}</h3>
               </div>
-              <p className="text-sm opacity-90">{action.description}</p>
+              <p className="text-xs lg:text-sm opacity-90">{action.description}</p>
             </Link>
           ))}
         </div>
@@ -158,9 +158,9 @@ function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Recent Solutions */}
         <div className="bg-white dark:bg-slate-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-          <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+          <div className="p-4 lg:p-6 border-b border-gray-200 dark:border-gray-700">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center">
+              <h2 className="text-lg lg:text-xl font-semibold text-gray-900 dark:text-white flex items-center">
                 <Activity className="h-5 w-5 mr-2" />
                 Recent Solutions
               </h2>
@@ -172,7 +172,7 @@ function Dashboard() {
               </Link>
             </div>
           </div>
-          <div className="p-6">
+          <div className="p-4 lg:p-6">
             {recentSolutions.length === 0 ? (
               <div className="text-center py-8">
                 <FileText className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
@@ -187,9 +187,9 @@ function Dashboard() {
             ) : (
               <div className="space-y-4">
                 {recentSolutions.map((solution) => (
-                  <div key={solution.id} className="flex items-center justify-between p-3 hover:bg-gray-50 dark:hover:bg-slate-800 rounded-lg transition-colors">
+                  <div key={solution.id} className="flex items-center justify-between p-2 lg:p-3 hover:bg-gray-50 dark:hover:bg-slate-800 rounded-lg transition-colors">
                     <div className="flex-1">
-                      <h3 className="font-medium text-gray-900 dark:text-white truncate">
+                      <h3 className="font-medium text-sm lg:text-base text-gray-900 dark:text-white truncate">
                         {solution.title}
                       </h3>
                       <div className="flex items-center mt-1 text-sm text-gray-500 dark:text-gray-400">
@@ -219,13 +219,13 @@ function Dashboard() {
 
         {/* Popular Tags */}
         <div className="bg-white dark:bg-slate-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-          <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center">
+          <div className="p-4 lg:p-6 border-b border-gray-200 dark:border-gray-700">
+            <h2 className="text-lg lg:text-xl font-semibold text-gray-900 dark:text-white flex items-center">
               <Tag className="h-5 w-5 mr-2" />
               Popular Tags
             </h2>
           </div>
-          <div className="p-6">
+          <div className="p-4 lg:p-6">
             {popularTags.length === 0 ? (
               <div className="text-center py-8">
                 <Tag className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
@@ -234,12 +234,12 @@ function Dashboard() {
             ) : (
               <div className="space-y-3">
                 {popularTags.map(([tag, count]) => (
-                  <div key={tag} className="flex items-center justify-between">
-                    <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300">
+                  <div key={tag} className="flex items-center justify-between flex-wrap gap-2">
+                    <span className="inline-flex items-center px-2 lg:px-3 py-1 rounded-full text-xs lg:text-sm bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300">
                       <Tag className="h-3 w-3 mr-1" />
                       {tag}
                     </span>
-                    <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                    <span className="text-xs lg:text-sm font-medium text-gray-500 dark:text-gray-400">
                       {count} solution{count !== 1 ? 's' : ''}
                     </span>
                   </div>

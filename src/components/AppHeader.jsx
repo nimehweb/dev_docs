@@ -1,8 +1,8 @@
 
 import React, { useEffect, useState } from 'react'
-import { UserCircle, Sun, Moon } from 'lucide-react'
+import { UserCircle, Sun, Moon, Menu } from 'lucide-react'
 
-function AppHeader() {
+function AppHeader({ sidebarOpen, setSidebarOpen }) {
   // Initialize theme from localStorage or default to light
   const [theme, setTheme] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -46,9 +46,17 @@ function AppHeader() {
   };
 
   return (
-    <div className="flex justify-between items-center p-6 border-b bg-white border-gray-200 dark:bg-slate-900 dark:border-gray-700">
-      <div className="font-bold text-gray-900 text-2xl dark:text-white">
+    <div className="flex justify-between items-center p-4 lg:p-6 border-b bg-white border-gray-200 dark:bg-slate-900 dark:border-gray-700">
+      <div className="flex items-center gap-4">
+        <button
+          onClick={() => setSidebarOpen(!sidebarOpen)}
+          className="lg:hidden p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+        >
+          <Menu className="h-6 w-6 text-gray-600 dark:text-gray-400" />
+        </button>
+        <div className="font-bold text-gray-900 text-xl lg:text-2xl dark:text-white">
         Developer Documentation
+        </div>
       </div>
       <div className="flex items-center gap-4">
         <button
