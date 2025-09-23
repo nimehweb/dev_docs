@@ -1,6 +1,6 @@
 import { useParams, Link } from "react-router-dom"
 import useSolutionsStore from '../store/solutionsStore'
-import { ArrowLeft, Calendar, Tag, Code2 } from "lucide-react"
+import { ArrowLeft, Calendar, Tag, Code2, Heart } from "lucide-react"
 import {Prism as SyntaxHighlighter} from "react-syntax-highlighter"
 import {oneDark} from "react-syntax-highlighter/dist/esm/styles/prism"
 import MarkdownRenderer from "../components/ui/MarkdownRenderer"
@@ -12,6 +12,10 @@ function SolutionDetails() {
         state.solutions.find ((s) => s.id === Number(id))
     )
     const deleteSolution = useSolutionsStore((state) => state.deleteSolution);
+    const toggleFavorite = useSolutionsStore((state) => state.toggleFavorite);
+    const favorites = useSolutionsStore((state) => state.favorites);
+    
+    const isFavorited = favorites.includes(Number(id));
 
     if(!solution){
         return (
@@ -28,6 +32,17 @@ function SolutionDetails() {
         <ArrowLeft className="mr-2" /> Back to Solutions
       </Link>
       <div className= " flex items-center gap-4">
+        <button
+          type="button"
+          className={`border px-3 py-2 flex items-center justify-center rounded-lg cursor-pointer transition-colors ${
+            isFavorited 
+              ? 'border-red-500 bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-900 dark:text-red-300 dark:hover:bg-red-800' 
+              : 'border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800'
+          }`}
+          onClick={() => toggleFavorite(solution.id)}
+          >
+            <Heart className={`inline-block  size-4 ${isFavorited ? 'fill-current' : ''}`} />
+          </button>
           <button
           type="button"
           className="border border-gray-300 dark:border-gray-700 px-3 py-1 rounded-lg hover:bg-red-200 hover:text-red-500 hover:border-red-500 cursor-pointer"

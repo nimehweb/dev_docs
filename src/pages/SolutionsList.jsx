@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { ExternalLink, Calendar, Tag, Search, Filter, X } from "lucide-react"
+import { ExternalLink, Calendar, Tag, Search, Filter, X, Heart } from "lucide-react"
 import useSolutionsStore from '../store/solutionsStore'
 
 function SolutionsList() {
   const solutions = useSolutionsStore((state) => state.solutions)
+  const toggleFavorite = useSolutionsStore((state) => state.toggleFavorite)
+  const favorites = useSolutionsStore((state) => state.favorites)
   const [searchParams, setSearchParams] = useSearchParams()
   
   // Get initial values from URL params
@@ -258,7 +260,22 @@ function SolutionsList() {
               <div key={solution.id} className='bg-white dark:bg-slate-900 border border-gray-200 dark:border-gray-700 px-6 py-6 rounded-lg shadow-sm hover:shadow-md transition-shadow'>
                 <div className='flex justify-between items-start mb-4'>
                   <h2 className='text-xl font-semibold text-gray-900 dark:text-white'>{solution.title}</h2>
-                  <div className="flex gap-2 items-center">
+                    <div className="flex gap-2 items-center">
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault()
+                        toggleFavorite(solution.id)
+                      }}
+                      className={`p-2 border rounded-lg flex items-center justify-center cursor-pointer transition-colors ${
+                        favorites.includes(solution.id)
+                          ? 'border-red-500 bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-900 dark:text-red-300 dark:hover:bg-red-800'
+                          : 'border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-slate-800'
+                      }`}
+                    >
+                      <Heart className={`size-4 ${
+                        favorites.includes(solution.id) ? 'fill-current' : ''
+                      }`} />
+                    </button>
                     <span className={`py-1 px-3 rounded-lg text-sm font-medium ${
                       solution.status === 'resolved' 
                         ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
