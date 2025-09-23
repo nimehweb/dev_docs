@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react'
 import { UserCircle, Sun, Moon } from 'lucide-react'
 
@@ -46,7 +47,7 @@ function AppHeader() {
 
   return (
     <div className="flex justify-between items-center p-6 border-b bg-white border-gray-200 dark:bg-slate-900 dark:border-gray-700">
-      <div className="font-bold text-gray-900 text-lg dark:text-white">
+      <div className="font-bold text-gray-900 text-2xl dark:text-white">
         Developer Documentation
       </div>
       <div className="flex items-center gap-4">

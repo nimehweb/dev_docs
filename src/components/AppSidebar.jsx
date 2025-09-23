@@ -29,7 +29,7 @@ function AppSidebar() {
     >
       {/* Header */}
       <div className="flex gap-2 justify-between items-center border-b border-gray-200 dark:border-gray-700 p-4">
-        <div className="flex gap-2 items-center">
+        <div className="flex gap-2 items-center py-1.75">
           <span className="flex items-center p-2 bg-slate-500 rounded-lg text-white">
             <FileCode className="h-7 w-7 text-white" />
           </span>

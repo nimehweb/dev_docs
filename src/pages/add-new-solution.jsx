@@ -38,7 +38,7 @@ const onSubmit = (data) =>{
 
     return(
         <div className="p-6">
-            <div className="mb-4 cursor-pointer hover:bg-slate-100 p-2 rounded-lg inline-block">
+            <div className="mb-4 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 p-2 rounded-lg inline-block">
                 <Link to= "/solution">   
                 <ArrowLeft className="inline-block mr-2"/>
                 <p className="inline font-semibold text-lg">Back to Solutions</p>
@@ -56,8 +56,8 @@ const onSubmit = (data) =>{
                 <AddTags />    
             <section className="mt-8">
                 <div className="flex justify-between ">
-                  <button onClick={() => navigate('/solution')} className="border border-gray-500 p-2 rounded-lg hover:bg-slate-100">Cancel</button>  
-                  <button type="submit" className="border border-gray-500 p-2 rounded-lg hover:bg-slate-100 cursor-pointer">Publish Solution</button>
+                  <button onClick={() => navigate('/solution')} className="border border-gray-500 p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-500 cursor-pointer">Cancel</button>  
+                  <button type="submit" className="border border-gray-500 p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-500 cursor-pointer">Publish Solution</button>
                 </div>
             </section>
             </form>

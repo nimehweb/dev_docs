@@ -30,7 +30,7 @@ function SolutionDetails() {
       <div className= " flex items-center gap-4">
           <button
           type="button"
-          className="border dark:border-gray-700 px-3 py-1 rounded-lg hover:bg-red-200 hover:text-red-500 hover:border-red-500 cursor-pointer"
+          className="border border-gray-300 dark:border-gray-700 px-3 py-1 rounded-lg hover:bg-red-200 hover:text-red-500 hover:border-red-500 cursor-pointer"
           onClick={() => deleteSolution(solution.id)}
           >
             <Trash className="inline-block mr-2 size-4" />
@@ -38,7 +38,7 @@ function SolutionDetails() {
           </button>
         <Link to={`/solution/${solution.id}/edit`}>
              <button 
-          className="border  dark:border-gray-700 px-3 py-1 rounded-lg hover:bg-slate-700 cursor-pointer"
+          className="border border-gray-300 dark:border-gray-700 px-3 py-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-500 cursor-pointer"
           type="button">
             <Edit className="inline-block mr-2 size-4" />
             Edit
@@ -57,11 +57,11 @@ function SolutionDetails() {
                         ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
                         : 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200'
                     }`}>{solution.status}</span>
-            <span className="px-3 py-1 bg-slate-700 rounded-lg">{solution.difficulty}</span>
+            <span className="px-3 py-1 bg-slate-200 dark:bg-slate-500 rounded-lg">{solution.difficulty}</span>
       </div>
       </div>
       
-      <p className="text-white mb-4 text-xl">{solution.description}</p>
+      <p className="text-gray-900 dark:text-white mb-4 text-xl">{solution.description}</p>
 
       <div className="text-sm text-gray-500 flex gap-2 items-center mb-2">
         <Calendar className="size-4" /> <p>Created: {solution.date}</p>
@@ -96,7 +96,7 @@ function SolutionDetails() {
           <p className="text-gray-500">No code snippets added.</p>
         ) : (
           solution.codeSnippets.map((snippet) => (
-            <div key={snippet.id} className="mb-4 border dark:border-gray-700 rounded-lg p-4">
+            <div key={snippet.id} className="mb-4 border border-gray-300 dark:border-gray-700 rounded-lg p-4">
               <h3 className="font-semibold mb-2">{snippet.title || "Untitled snippet"}</h3>
               
               <SyntaxHighlighter language={snippet.language} style={oneDark} className="rounded-lg">

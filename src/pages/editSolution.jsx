@@ -36,7 +36,7 @@ const editSolution = useSolutionsStore((state) => state.editSolution);
 
   return (
     <div className="p-6">
-      <Link to={`/solution/${id}`} className="text-blue-600 hover:underline">← Back</Link>
+      <Link to={`/solution/${id}`} className="text-blue-600 hover:underline">← Back to Solution</Link>
       <h1 className="text-2xl font-bold mb-1">Edit Solution</h1>
       <FormProvider {...methods}>
         <form onSubmit={methods.handleSubmit(onSubmit)}>

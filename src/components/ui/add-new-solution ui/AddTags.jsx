@@ -32,7 +32,7 @@ function AddTags() {
     }
     }
   return (
-    <section className="p-6 border border-gray-300 rounded-lg">
+    <section className="p-6 border border-gray-300 dark:border-gray-700 rounded-lg">
       <h2 className="font-semibold mb-3">Tags & Categories</h2>
 
         <div className="flex flex-wrap gap-2 my-6">
@@ -59,12 +59,12 @@ function AddTags() {
           onChange={(e) => setNewTag(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="Add a tag and press Enter or comma"
-          className="border border-gray-300 p-2 rounded-lg flex-1"
+          className="border border-gray-300 dark:border-gray-700 p-2 rounded-lg flex-1"
         />
         <button
           type="button"
           onClick={handleAddTag}
-          className="border border-gray-300 px-3 py-1 rounded-lg"
+          className="border border-gray-300 dark:border-gray-700 hover:bg-slate-100 dark:hover:bg-slate-500 px-3 py-1 rounded-lg"
         >
           Add Tag
         </button>
