@@ -25,7 +25,7 @@ function Basic_info() {
                          rows="4" placeholder="Briefly describe the problem and solution"></textarea>
                          {errors.description && <p className="text-red-500 mt-1">{errors.description.message}</p>}
                     </div>
-                    <div className="mb-4 flex gap-20">
+                    <div className="mb-4 flex flex-col gap-4 lg:flex-row lg:gap-20">
                         <div className="flex flex-col">
                             <label htmlFor="status" className="block mb-2 font-medium"> Status*</label>
                             <select name="status" {...register("status")} className="block w-40 border border-gray-300 dark:border-gray-700 bg-white dark:bg-slate-900 text-gray-900 dark:text-white rounded-md shadow-sm px-3 py-2 ">
