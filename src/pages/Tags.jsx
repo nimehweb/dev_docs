@@ -16,14 +16,14 @@ function Tags() {
           name: tag,
           count: 0,
           solutions: [],
-          lastUsed: solution.date
+          lastUsed: solution.created_at
         }
       }
       acc[tag].count += 1
       acc[tag].solutions.push(solution)
       // Keep track of most recent usage
-      if (new Date(solution.date) > new Date(acc[tag].lastUsed)) {
-        acc[tag].lastUsed = solution.date
+      if (new Date(solution.created_at) > new Date(acc[tag].lastUsed)) {
+        acc[tag].lastUsed = solution.created_at
       }
     })
     return acc

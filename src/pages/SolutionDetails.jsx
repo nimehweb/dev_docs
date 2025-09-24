@@ -9,13 +9,13 @@ import { Edit, Trash } from "lucide-react"
 function SolutionDetails() {
     const {id} = useParams();
     const solution = useSolutionsStore((state) =>
-        state.solutions.find ((s) => s.id === Number(id))
+        state.solutions.find ((s) => s.id === id)
     )
     const deleteSolution = useSolutionsStore((state) => state.deleteSolution);
     const toggleFavorite = useSolutionsStore((state) => state.toggleFavorite);
     const favorites = useSolutionsStore((state) => state.favorites);
     
-    const isFavorited = favorites.includes(Number(id));
+    const isFavorited = favorites.includes(id);
 
     if(!solution){
         return (
@@ -79,7 +79,7 @@ function SolutionDetails() {
       <p className="text-gray-900 dark:text-white mb-4 text-base lg:text-lg">{solution.description}</p>
 
       <div className="text-xs lg:text-sm text-gray-500 flex gap-2 items-center mb-2">
-        <Calendar className="size-3 lg:size-4" /> <p>Created: {solution.date}</p>
+        <Calendar className="size-3 lg:size-4" /> <p>Created: {new Date(solution.created_at).toLocaleDateString()}</p>
       </div>
       <section> 
         {solution.tags.map((tag) => (
@@ -95,22 +95,22 @@ function SolutionDetails() {
       </section>
       <section className="mb-6 mt-4">
         <h2 className="text-base lg:text-lg font-semibold mb-2">Problem Description</h2>
-        <MarkdownRenderer content={solution.problemDescription} />
+        <MarkdownRenderer content={solution.problem_description} />
         {/* <p>{solution.problemDescription}</p> */}
       </section>
 
       <section className="mb-6">
         <h2 className="text-base lg:text-lg font-semibold mb-2">Solution Steps</h2>
-        <MarkdownRenderer content={solution.solutionSteps} />
+        <MarkdownRenderer content={solution.solution_steps} />
         {/* <p>{solution.solutionSteps}</p> */}
       </section>
 
       <section className="mb-6">
         <h2 className="text-base lg:text-lg font-semibold mb-2">Code Snippets</h2>
-        {solution.codeSnippets.length === 0 ? (
+        {solution.code_snippets.length === 0 ? (
           <p className="text-sm lg:text-base text-gray-500">No code snippets added.</p>
         ) : (
-          solution.codeSnippets.map((snippet) => (
+          solution.code_snippets.map((snippet) => (
             <div key={snippet.id} className="mb-4 border border-gray-300 dark:border-gray-700 rounded-lg p-3 lg:p-4">
               <h3 className="text-sm lg:text-base font-semibold mb-2">{snippet.title || "Untitled snippet"}</h3>
               

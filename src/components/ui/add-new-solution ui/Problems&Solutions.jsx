@@ -7,8 +7,8 @@ function ProblemsAndSolutions() {
     const {register, watch} = useFormContext()
     const [mode, setMode] = useState('edit')
 
-    const problemText = watch('problemDescription') || ''
-    const solutionText = watch('solutionSteps') || ''
+    const problemText = watch('problem_description') || ''
+    const solutionText = watch('solution_steps') || ''
    
   return (
     <section className="Problems&Solutions my-6 p-6 border border-gray-300 dark:border-gray-700 rounded-lg ">
@@ -36,13 +36,13 @@ function ProblemsAndSolutions() {
                     <div>
                          <label htmlFor="" className="block mb-2 font-medium"> Problem Description</label>
                         <textarea 
-                        {...register("problemDescription")} 
+                        {...register("problem_description")} 
                         onInput={(e) => {
                         e.target.style.height = "auto";
                         e.target.style.height = e.target.scrollHeight + "px";
                         }}
                         className="w-full border border-gray-300 dark:border-gray-700 p-2 rounded-lg overflow-hidden" id="description" 
-                        name="problemDescription" rows={4} 
+                        name="problem_description" rows={4} 
                         placeholder="Describe the problem in detail"></textarea>
                     </div>
                         ):(
@@ -57,13 +57,13 @@ function ProblemsAndSolutions() {
                     {mode === 'edit' ?(
                     <div>
                         <label htmlFor="" className="block mb-2 font-medium"> Solution Steps</label>
-                        <textarea {...register("solutionSteps")} 
+                        <textarea {...register("solution_steps")} 
                         onInput={(e) => { 
                         e.target.style.height = "auto";
                         e.target.style.height = e.target.scrollHeight + "px";
                      }}
                         className="w-full border border-gray-300 dark:border-gray-700 p-2 rounded-lg overflow-hidden" 
-                        id="solutionSteps" name="solutionSteps"
+                        id="solution_steps" name="solution_steps"
                          rows={4} placeholder="Provide step-by-step solution"></textarea>
                     </div>
                     ):(

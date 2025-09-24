@@ -4,9 +4,12 @@ import AppHeader from '../components/AppHeader'
 import AppSidebarHeader from '../components/AppSidebarHeader'
 import AppSidebarNav from '../components/AppSidebarNav'
 import MainContent from '../components/MainContent'
+import DataLoader from '../components/DataLoader'
+
 function UserPage() {
     const [sidebarOpen, setSidebarOpen] = useState(false)
   return (
+    <DataLoader>
       <div className="h-screen flex flex-col lg:grid lg:grid-cols-[16rem_1fr] lg:grid-rows-[auto_1fr] bg-white dark:bg-slate-900 text-gray-900 dark:text-white">
         {/* Top-left: Sidebar Header (desktop only) */}
         <AppSidebarHeader sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
@@ -24,6 +27,7 @@ function UserPage() {
           <MainContent/>
         </div>
       </div>
+    </DataLoader>
     
   )
 }

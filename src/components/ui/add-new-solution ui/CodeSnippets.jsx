@@ -6,7 +6,7 @@ function CodeSnippets() {
     const { register, control } = useFormContext();
     const { fields, append, remove } = useFieldArray({
         control,
-        name: "codeSnippets"
+        name: "code_snippets"
     });
     function onAppendSnippet() {
     append({ title: "", language: "javascript", code: "" });

@@ -8,11 +8,10 @@ import AddTags from "../components/ui/add-new-solution ui/AddTags"
 import CodeSnippets from "../components/ui/add-new-solution ui/CodeSnippets"
 
 const defaultValues = {
-  date: new Date().toISOString().split("T")[0],
   title: "",
   description: "",
-  status: "Open",
-  difficulty: "Easy",
+  status: "open",
+  difficulty: "easy",
   problemDescription: "",
   solutionSteps: "",
   codeSnippets: [],
@@ -29,11 +28,9 @@ const methods = useForm({
 })
 
 const onSubmit = (data) =>{
-    const payload = { id: Date.now(), ...data };
-    addSolution(payload);
+    addSolution(data);
     methods.reset(defaultValues);
     navigate("/solution");
-    console.log(data)
 }
 
     return(

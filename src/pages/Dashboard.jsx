@@ -24,7 +24,7 @@ function Dashboard() {
   
   // Get recent solutions (last 5)
   const recentSolutions = solutions
-    .sort((a, b) => new Date(b.date) - new Date(a.date))
+    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
     .slice(0, 5)
   
   // Get popular tags
@@ -194,7 +194,7 @@ function Dashboard() {
                       </h3>
                       <div className="flex items-center mt-1 text-sm text-gray-500 dark:text-gray-400">
                         <Calendar className="h-4 w-4 mr-1" />
-                        {solution.date}
+                        {new Date(solution.created_at).toLocaleDateString()}
                         <span className={`ml-3 px-2 py-1 rounded-full text-xs ${
                           solution.status === 'resolved' 
                             ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 

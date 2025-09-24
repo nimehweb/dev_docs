@@ -28,7 +28,7 @@ function Profile() {
 
   // Get recent solutions (last 5)
   const recentSolutions = solutions
-    .sort((a, b) => new Date(b.date) - new Date(a.date))
+    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
     .slice(0, 5)
 
   // Get popular tags
@@ -191,7 +191,7 @@ function Profile() {
                     </p>
                     <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
                       <Calendar className="size-3" />
-                      {new Date(solution.date).toLocaleDateString()}
+                      {new Date(solution.created_at).toLocaleDateString()}
                     </div>
                   </div>
                   <span className={`px-2 py-1 rounded-full text-xs font-medium ${

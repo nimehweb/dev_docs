@@ -35,8 +35,8 @@ function SolutionsList() {
   let filteredSolutions = solutions.filter(solution => {
     const matchesSearch = solution.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          solution.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         solution.problemDescription?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         solution.solutionSteps?.toLowerCase().includes(searchTerm.toLowerCase())
+                         solution.problem_description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         solution.solution_steps?.toLowerCase().includes(searchTerm.toLowerCase())
     
     const matchesTag = !selectedTag || solution.tags.includes(selectedTag)
     const matchesStatus = statusFilter === 'all' || solution.status === statusFilter
@@ -49,15 +49,15 @@ function SolutionsList() {
   filteredSolutions.sort((a, b) => {
     switch (sortBy) {
       case 'newest':
-        return new Date(b.date) - new Date(a.date)
+        return new Date(b.created_at) - new Date(a.created_at)
       case 'oldest':
-        return new Date(a.date) - new Date(b.date)
+        return new Date(a.created_at) - new Date(b.created_at)
       case 'title':
         return a.title.localeCompare(b.title)
       case 'status':
         return a.status.localeCompare(b.status)
       default:
-        return new Date(b.date) - new Date(a.date)
+        return new Date(b.created_at) - new Date(a.created_at)
     }
   })
 
@@ -312,7 +312,7 @@ function SolutionsList() {
                 
                 <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
                   <Calendar className='size-3 lg:size-4 mr-2'/>
-                  <span>Created: {new Date(solution.date).toLocaleDateString()}</span>
+                  <span>Created: {new Date(solution.created_at).toLocaleDateString()}</span>
                 </div>
               </div>
             ))}
