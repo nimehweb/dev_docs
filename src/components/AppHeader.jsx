@@ -1,7 +1,8 @@
-
+import { useNavigate } from 'react-router-dom';
 import React, { useEffect, useState } from 'react'
 import { UserCircle, Sun, Moon, Menu } from 'lucide-react'
-
+import { LogOut } from 'lucide-react';
+import {logout} from '../firebase'
 function AppHeader({ sidebarOpen, setSidebarOpen }) {
   // Initialize theme from localStorage or default to light
   const [theme, setTheme] = useState(() => {
@@ -17,6 +18,7 @@ function AppHeader({ sidebarOpen, setSidebarOpen }) {
     }
     return 'light';
   });
+  const [menuOpen,setMenuOpen] = useState(false);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -45,6 +47,11 @@ function AppHeader({ sidebarOpen, setSidebarOpen }) {
     setTheme(newTheme);
   };
 
+  const navigate = useNavigate();
+  function handleLogout() {
+    logout();
+    navigate('/login');
+  }
   return (
     <div className="flex justify-between items-center p-4 lg:p-6 border-b bg-white border-gray-200 dark:bg-slate-900 dark:border-gray-700">
       <div className="flex items-center gap-4">
@@ -68,7 +75,26 @@ function AppHeader({ sidebarOpen, setSidebarOpen }) {
             ? <Moon className="h-6 w-6 text-gray-600" />
             : <Sun className="h-6 w-6 text-yellow-400" />}
         </button>
-        <UserCircle className="h-6 w-6 text-gray-500 dark:text-gray-400" />
+        <div>
+          <button
+          onClick={() => setMenuOpen(!menuOpen)}
+          >
+            <UserCircle className="h-6 w-6 text-gray-500 dark:text-gray-400" />
+          </button>
+          {menuOpen &&
+            <div className="absolute right-0 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none dark:bg-slate-900">
+              <button
+              onClick={handleLogout}
+              className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-slate-100 dark:hover:bg-slate-700 w-full text-left"
+              >
+                <LogOut className="h-6 w-6" />
+                <span>Logout</span>
+              </button>
+            </div>
+
+          }
+        </div>
+        
       </div>
     </div>
   )

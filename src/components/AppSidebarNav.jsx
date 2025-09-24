@@ -15,7 +15,7 @@ function AppSidebarNav({ sidebarOpen, setSidebarOpen }) {
   const navigationItems = [
     {
       name: 'Dashboard',
-      href: '/',
+      href: '/dashboard',
       icon: LayoutDashboard,
     },
     {

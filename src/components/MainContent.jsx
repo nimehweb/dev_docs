@@ -12,7 +12,7 @@ import EditSolution from '../pages/editSolution'
 function MainContent() {
   return (
    <Routes>
-         <Route path="/" element={<Dashboard />} />
+         <Route path="/dashboard" element={<Dashboard />} />
          <Route path="/solution" element={<SolutionsList />}/>
          <Route path="/solution/add-new" element={<AddNewSolution />} />
          <Route path= "/solution/:id" element={<SolutionDetails />} />
