@@ -9,16 +9,63 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
+// Auth helper functions
+export const authAPI = {
+  // Sign up with email and password
+  async signUp(email, password, name) {
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          name: name
+        }
+      }
+    })
+    
+    if (error) throw error
+    return data
+  },
+
+  // Sign in with email and password
+  async signIn(email, password) {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password
+    })
+    
+    if (error) throw error
+    return data
+  },
+
+  // Sign out
+  async signOut() {
+    const { error } = await supabase.auth.signOut()
+    if (error) throw error
+  },
+
+  // Get current user
+  getCurrentUser() {
+    return supabase.auth.getUser()
+  },
+
+  // Listen to auth state changes
+  onAuthStateChange(callback) {
+    return supabase.auth.onAuthStateChange(callback)
+  }
+}
+
 // Database helper functions
 export const solutionsAPI = {
   // Get all solutions for the current user
-  async getSolutions(userId) {
-    if (!userId) throw new Error('User ID is required')
+  async getSolutions() {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) throw new Error('User not authenticated')
 
     const { data, error } = await supabase
       .from('solutions')
       .select('*')
-      .eq('user_id', userId)
+      .eq('user_id', user.id)
       .order('created_at', { ascending: false })
     
     if (error) throw error
@@ -26,14 +73,15 @@ export const solutionsAPI = {
   },
 
   // Add a new solution
-  async addSolution(solution, userId) {
-    if (!userId) throw new Error('User ID is required')
+  async addSolution(solution) {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) throw new Error('User not authenticated')
 
     const { data, error } = await supabase
       .from('solutions')
       .insert([{
         ...solution,
-        user_id: userId
+        user_id: user.id
       }])
       .select()
       .single()
@@ -43,14 +91,15 @@ export const solutionsAPI = {
   },
 
   // Update a solution
-  async updateSolution(id, updates, userId) {
-    if (!userId) throw new Error('User ID is required')
+  async updateSolution(id, updates) {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) throw new Error('User not authenticated')
 
     const { data, error } = await supabase
       .from('solutions')
       .update(updates)
       .eq('id', id)
-      .eq('user_id', userId)
+      .eq('user_id', user.id)
       .select()
       .single()
     
@@ -59,39 +108,42 @@ export const solutionsAPI = {
   },
 
   // Delete a solution
-  async deleteSolution(id, userId) {
-    if (!userId) throw new Error('User ID is required')
+  async deleteSolution(id) {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) throw new Error('User not authenticated')
 
     const { error } = await supabase
       .from('solutions')
       .delete()
       .eq('id', id)
-      .eq('user_id', userId)
+      .eq('user_id', user.id)
     
     if (error) throw error
   },
 
   // Get user favorites
-  async getFavorites(userId) {
-    if (!userId) throw new Error('User ID is required')
+  async getFavorites() {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) throw new Error('User not authenticated')
 
     const { data, error } = await supabase
       .from('user_favorites')
       .select('solution_id')
-      .eq('user_id', userId)
+      .eq('user_id', user.id)
     
     if (error) throw error
     return (data || []).map(fav => fav.solution_id)
   },
 
   // Add to favorites
-  async addToFavorites(solutionId, userId) {
-    if (!userId) throw new Error('User ID is required')
+  async addToFavorites(solutionId) {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) throw new Error('User not authenticated')
 
     const { error } = await supabase
       .from('user_favorites')
       .insert([{
-        user_id: userId,
+        user_id: user.id,
         solution_id: solutionId
       }])
     
@@ -101,14 +153,15 @@ export const solutionsAPI = {
   },
 
   // Remove from favorites
-  async removeFromFavorites(solutionId, userId) {
-    if (!userId) throw new Error('User ID is required')
+  async removeFromFavorites(solutionId) {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) throw new Error('User not authenticated')
 
     const { error } = await supabase
       .from('user_favorites')
       .delete()
       .eq('solution_id', solutionId)
-      .eq('user_id', userId)
+      .eq('user_id', user.id)
     
     if (error) throw error
   }

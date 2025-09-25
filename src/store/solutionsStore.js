@@ -1,27 +1,21 @@
 import { create } from "zustand"
 import { solutionsAPI } from '../lib/supabase'
 
-const useSolutionsStore = create((set) => ({
+const useSolutionsStore = create((set, get) => ({
   solutions: [],
   favorites: [],
-  currentUserId: null,
   loading: false,
   error: null,
 
   // Initialize data from Supabase
-  initializeData: async (userId) => {
-    if (!userId) {
-      set({ error: 'User ID is required for initialization' })
-      return
-    }
-
+  initializeData: async () => {
     set({ loading: true, error: null })
     try {
       const [solutions, favorites] = await Promise.all([
-        solutionsAPI.getSolutions(userId),
-        solutionsAPI.getFavorites(userId)
+        solutionsAPI.getSolutions(),
+        solutionsAPI.getFavorites()
       ])
-      set({ solutions, favorites, currentUserId: userId, loading: false })
+      set({ solutions, favorites, loading: false })
     } catch (error) {
       console.error('Error initializing data:', error)
       set({ error: error.message, loading: false })
@@ -30,14 +24,9 @@ const useSolutionsStore = create((set) => ({
 
   // Add solution
   addSolution: async (solution) => {
-    const { currentUserId } = get()
-    if (!currentUserId) {
-      throw new Error('User not authenticated')
-    }
-
     set({ loading: true, error: null })
     try {
-      const newSolution = await solutionsAPI.addSolution(solution, currentUserId)
+      const newSolution = await solutionsAPI.addSolution(solution)
       set((state) => ({
         solutions: [newSolution, ...state.solutions],
         loading: false
@@ -52,14 +41,9 @@ const useSolutionsStore = create((set) => ({
 
   // Edit solution
   editSolution: async (id, updatedSolution) => {
-    const { currentUserId } = get()
-    if (!currentUserId) {
-      throw new Error('User not authenticated')
-    }
-
     set({ loading: true, error: null })
     try {
-      const updated = await solutionsAPI.updateSolution(id, updatedSolution, currentUserId)
+      const updated = await solutionsAPI.updateSolution(id, updatedSolution)
       set((state) => ({
         solutions: state.solutions.map((sol) =>
           sol.id === id ? updated : sol
@@ -76,14 +60,9 @@ const useSolutionsStore = create((set) => ({
 
   // Delete solution
   deleteSolution: async (id) => {
-    const { currentUserId } = get()
-    if (!currentUserId) {
-      throw new Error('User not authenticated')
-    }
-
     set({ loading: true, error: null })
     try {
-      await solutionsAPI.deleteSolution(id, currentUserId)
+      await solutionsAPI.deleteSolution(id)
       set((state) => ({
         solutions: state.solutions.filter((s) => s.id !== id),
         favorites: state.favorites.filter((fId) => fId !== id),
@@ -98,21 +77,17 @@ const useSolutionsStore = create((set) => ({
 
   // Toggle favorite
   toggleFavorite: async (id) => {
-    const { favorites, currentUserId } = get()
-    if (!currentUserId) {
-      throw new Error('User not authenticated')
-    }
-
+    const { favorites } = get()
     const isFavorited = favorites.includes(id)
     
     try {
       if (isFavorited) {
-        await solutionsAPI.removeFromFavorites(id, currentUserId)
+        await solutionsAPI.removeFromFavorites(id)
         set((state) => ({
           favorites: state.favorites.filter((fId) => fId !== id)
         }))
       } else {
-        await solutionsAPI.addToFavorites(id, currentUserId)
+        await solutionsAPI.addToFavorites(id)
         set((state) => ({
           favorites: [...state.favorites, id]
         }))

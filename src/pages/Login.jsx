@@ -1,41 +1,49 @@
 import React, { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
-// import useAuthStore from '../store/authStore'
 import { Eye, EyeOff, Mail, Lock, AlertCircle } from 'lucide-react'
-import {useAuthState} from 'react-firebase-hooks/auth'
-import {auth, loginWithEmailAndPassword} from '../firebase'
+import { useAuth } from '../hooks/useAuth'
+import { authAPI } from '../lib/supabase'
 
 function Login() {
   const navigate = useNavigate()
+  const { user, loading } = useAuth()
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-  const [user, loading, error] = useAuthState(auth) // Firebase auth state
+  const [error, setError] = useState('')
   
   const {
     register,
     handleSubmit,
     formState: { errors }
   } = useForm()
+
   // Redirect if already authenticated
   useEffect(() => {
-    if(loading) return;
-    if (user) {
+    if (!loading && user) {
       navigate('/dashboard')
     }
-  }, [user,loading, navigate])
-
+  }, [user, loading, navigate])
 
   const onSubmit = async (data) => {
     setIsLoading(true)
+    setError('')
     try {
-    await loginWithEmailAndPassword(data.email, data.password)
-    }
-    catch (err) {
-      // handle error (show message, etc.)
+      await authAPI.signIn(data.email, data.password)
+      // Navigation will happen automatically via useAuth hook
+    } catch (err) {
+      setError(err.message)
     } finally {
       setIsLoading(false)
     }
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+      </div>
+    )
   }
 
   return (

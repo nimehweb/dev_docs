@@ -2,15 +2,16 @@ import React, { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { Eye, EyeOff, Mail, Lock, User, AlertCircle } from 'lucide-react'
-import { auth, registerWithEmailAndPassword } from '../firebase'
-import { useAuthState } from 'react-firebase-hooks/auth'
+import { useAuth } from '../hooks/useAuth'
+import { authAPI } from '../lib/supabase'
 
 function Signup() {
   const navigate = useNavigate()
+  const { user, loading } = useAuth()
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-  const [user, loading, error] = useAuthState(auth) // Firebase auth state
+  const [error, setError] = useState('')
   
   const {
     register,
@@ -23,22 +24,30 @@ function Signup() {
 
   // Redirect if already authenticated
   useEffect(() => {
-    if(loading) return;
-    if (user) {
+    if (!loading && user) {
       navigate('/dashboard')
     }
-  }, [user,loading, navigate])
+  }, [user, loading, navigate])
   
   const onSubmit = async (data) => {
     setIsLoading(true)
+    setError('')
     try {
-     await registerWithEmailAndPassword(data.name, data.email, data.password) 
-    }
-    catch (err) {
-      // handle error (show message, etc.)
+      await authAPI.signUp(data.email, data.password, data.name)
+      // Navigation will happen automatically via useAuth hook
+    } catch (err) {
+      setError(err.message)
     } finally {
       setIsLoading(false)
     }
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+      </div>
+    )
   }
 
   return (
@@ -70,6 +79,35 @@ function Signup() {
                 </div>
               </div>
             )}
+
+            {/* Name Field */}
+            <div>
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Full Name
+              </label>
+              <div className="mt-1 relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <User className="h-5 w-5 text-gray-400" />
+                </div>
+                <input
+                  {...register('name', {
+                    required: 'Name is required',
+                    minLength: {
+                      value: 2,
+                      message: 'Name must be at least 2 characters'
+                    }
+                  })}
+                  type="text"
+                  className="appearance-none block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-slate-700 text-gray-900 dark:text-white"
+                  placeholder="Enter your full name"
+                />
+              </div>
+              {errors.name && (
+                <p className="mt-2 text-sm text-red-600 dark:text-red-400">
+                  {errors.name.message}
+                </p>
+              )}
+            </div>
 
             {/* Email Field */}
             <div>

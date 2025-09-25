@@ -1,27 +1,21 @@
-import { useEffect, useState } from 'react'
-import { Navigate,Outlet } from 'react-router-dom'
-import { onAuthStateChanged } from 'firebase/auth'
-import { auth } from '../firebase'
+import { Navigate, Outlet } from 'react-router-dom'
+import { useAuth } from '../hooks/useAuth'
 
 function ProtectedRoute() {
-  const [user, setUser] = useState(null)
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser)
-      setLoading(false)
-    })
-    return unsubscribe
-  }, [])
+  const { user, loading } = useAuth()
 
   if (loading) {
-    return <p> Loading...</p>
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+      </div>
+    )
   }
 
   if (!user) {
     return <Navigate to="/login" />
   }
+
   return <Outlet />
 }
 

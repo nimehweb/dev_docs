@@ -1,16 +1,15 @@
 import { useEffect } from 'react'
-import { useAuthState } from 'react-firebase-hooks/auth'
-import { auth } from '../firebase'
+import { useAuth } from '../hooks/useAuth'
 import useSolutionsStore from '../store/solutionsStore'
 
 function DataLoader({ children }) {
-  const [user, loading] = useAuthState(auth)
+  const { user, loading } = useAuth()
   const initializeData = useSolutionsStore((state) => state.initializeData)
 
   useEffect(() => {
     if (!loading && user) {
       // Initialize data when user is authenticated
-      initializeData(user.uid)
+      initializeData()
     }
   }, [user, loading, initializeData])
 
