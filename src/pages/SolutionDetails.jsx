@@ -95,13 +95,13 @@ function SolutionDetails() {
       </section>
       <section className="mb-6 mt-4">
         <h2 className="text-base lg:text-lg font-semibold mb-2">Problem Description</h2>
-        <MarkdownRenderer content={solution.problem_description} />
+        <MarkdownRenderer content={solution.problemDescription} />
         {/* <p>{solution.problemDescription}</p> */}
       </section>
 
       <section className="mb-6">
         <h2 className="text-base lg:text-lg font-semibold mb-2">Solution Steps</h2>
-        <MarkdownRenderer content={solution.solution_steps} />
+        <MarkdownRenderer content={solution.solutionSteps} />
         {/* <p>{solution.solutionSteps}</p> */}
       </section>
 
