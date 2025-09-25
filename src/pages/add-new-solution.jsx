@@ -12,9 +12,9 @@ const defaultValues = {
   description: "",
   status: "open",
   difficulty: "easy",
-  problem_description: "",
-  solution_steps: "",
-  code_snippets: [],
+  problemDescription: "",
+  solutionSteps: "",
+  codeSnippets: [],
   tags: []
 };
 
