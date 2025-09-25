@@ -63,7 +63,7 @@ export const solutionsAPI = {
     if (!user) throw new Error('User not authenticated')
 
     const { data, error } = await supabase
-      .from('solutions')
+      .from("solutions")
       .select('*')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
