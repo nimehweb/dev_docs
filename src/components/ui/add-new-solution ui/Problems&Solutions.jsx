@@ -42,7 +42,7 @@ function ProblemsAndSolutions() {
                         e.target.style.height = e.target.scrollHeight + "px";
                         }}
                         className="w-full border border-gray-300 dark:border-gray-700 p-2 rounded-lg overflow-hidden" id="description" 
-                        name="problem_description" rows={4} 
+                        name="problemDescription" rows={4} 
                         placeholder="Describe the problem in detail"></textarea>
                     </div>
                         ):(
@@ -63,7 +63,7 @@ function ProblemsAndSolutions() {
                         e.target.style.height = e.target.scrollHeight + "px";
                      }}
                         className="w-full border border-gray-300 dark:border-gray-700 p-2 rounded-lg overflow-hidden" 
-                        id="solution_steps" name="solution_steps"
+                        id="solutionSteps" name="solution_steps"
                          rows={4} placeholder="Provide step-by-step solution"></textarea>
                     </div>
                     ):(
