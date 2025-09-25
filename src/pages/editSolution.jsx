@@ -13,7 +13,7 @@ function EditSolution() {
  const solutions = useSolutionsStore((state) => state.solutions);
 const editSolution = useSolutionsStore((state) => state.editSolution);
 
-  const solution = solutions.find((s) => s.id === Number(id));
+  const solution = solutions.find((s) => s.id === id);
 
   const methods = useForm({
     defaultValues: {}
