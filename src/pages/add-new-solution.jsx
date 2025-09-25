@@ -28,9 +28,14 @@ const methods = useForm({
 })
 
 const onSubmit = (data) =>{
-    addSolution(data);
-    methods.reset(defaultValues);
-    navigate("/solution");
+   try {
+        await addSolution(data);
+        methods.reset(defaultValues);
+        navigate("/solution");
+    } catch (error) {
+        console.error('Error saving solution:', error);
+        // The error will be handled by the zustand store and displayed to the user
+    }
 }
 
     return(
