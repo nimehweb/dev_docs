@@ -27,7 +27,7 @@ const methods = useForm({
     defaultValues
 })
 
-const onSubmit = (data) =>{
+const onSubmit = async (data) =>{
    try {
         await addSolution(data);
         methods.reset(defaultValues);
