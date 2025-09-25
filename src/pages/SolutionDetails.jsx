@@ -9,7 +9,7 @@ import { Edit, Trash } from "lucide-react"
 function SolutionDetails() {
     const {id} = useParams();
     const solution = useSolutionsStore((state) =>
-        state.solutions.find ((s) => s.id === Number(id))
+        state.solutions.find ((s) => s.id === id)
     )
     const deleteSolution = useSolutionsStore((state) => state.deleteSolution);
     const toggleFavorite = useSolutionsStore((state) => state.toggleFavorite);
