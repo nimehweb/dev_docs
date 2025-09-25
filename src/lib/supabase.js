@@ -69,7 +69,12 @@ export const solutionsAPI = {
       .order('created_at', { ascending: false })
     
     if (error) throw error
-    return data || []
+     return (data || []).map(sol => ({
+    ...sol,
+    problemDescription: sol.problem_description,
+    solutionSteps: sol.solution_steps,
+    codeSnippets: sol.code_snippets,
+  }))
   },
 
   // Add a new solution
