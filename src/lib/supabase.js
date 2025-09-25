@@ -77,12 +77,22 @@ export const solutionsAPI = {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) throw new Error('User not authenticated')
 
+    // Map camelCase → snake_case
+    const payload = {
+      title: solution.title,
+      description: solution.description,
+      status: solution.status,
+      difficulty: solution.difficulty,
+      problem_description: solution.problemDescription || "",
+      solution_steps: solution.solutionSteps || "",
+      code_snippets: solution.codeSnippets || [],
+      tags: solution.tags || [],
+      user_id: user.id,
+    }
+    
     const { data, error } = await supabase
       .from('solutions')
-      .insert([{
-        ...solution,
-        user_id: user.id
-      }])
+      .insert([payload])
       .select()
       .single()
     
@@ -95,9 +105,21 @@ export const solutionsAPI = {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) throw new Error('User not authenticated')
 
+    // Map camelCase → snake_case
+    const payload = {
+      title: updates.title,
+      description: updates.description,
+      status: updates.status,
+      difficulty: updates.difficulty,
+      problem_description: updates.problemDescription,
+      solution_steps: updates.solutionSteps,
+      code_snippets: updates.codeSnippets,
+      tags: updates.tags,
+    }
+    
     const { data, error } = await supabase
       .from('solutions')
-      .update(updates)
+      .update(payload)
       .eq('id', id)
       .eq('user_id', user.id)
       .select()
