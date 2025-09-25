@@ -110,8 +110,8 @@ function SolutionDetails() {
         {solution.code_snippets.length === 0 ? (
           <p className="text-sm lg:text-base text-gray-500">No code snippets added.</p>
         ) : (
-          solution.code_snippets.map((snippet) => (
-            <div key={snippet.id} className="mb-4 border border-gray-300 dark:border-gray-700 rounded-lg p-3 lg:p-4">
+          solution.code_snippets.map((snippet, index) => (
+            <div key={snippet.id || index} className="mb-4 border border-gray-300 dark:border-gray-700 rounded-lg p-3 lg:p-4">
               <h3 className="text-sm lg:text-base font-semibold mb-2">{snippet.title || "Untitled snippet"}</h3>
               
               <SyntaxHighlighter 
