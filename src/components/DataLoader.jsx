@@ -10,7 +10,7 @@ function DataLoader({ children }) {
   useEffect(() => {
     if (!loading && user) {
       // Initialize data when user is authenticated
-      initializeData()
+      initializeData(user.uid)
     }
   }, [user, loading, initializeData])
 
