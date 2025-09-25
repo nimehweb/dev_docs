@@ -14,7 +14,7 @@ const defaultValues = {
   difficulty: "easy",
   problemDescription: "",
   solutionSteps: "",
-  codeSnippets: [],
+  code_Snippets: [],
   tags: []
 };
 
