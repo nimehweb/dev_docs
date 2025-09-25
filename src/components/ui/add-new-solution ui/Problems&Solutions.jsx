@@ -7,8 +7,8 @@ function ProblemsAndSolutions() {
     const {register, watch} = useFormContext()
     const [mode, setMode] = useState('edit')
 
-    const problemText = watch('problem_description') || ''
-    const solutionText = watch('solution_steps') || ''
+    const problemText = watch('problemDescription') || ''
+    const solutionText = watch('solutionSteps') || ''
    
   return (
     <section className="Problems&Solutions my-6 p-6 border border-gray-300 dark:border-gray-700 rounded-lg ">
@@ -36,7 +36,7 @@ function ProblemsAndSolutions() {
                     <div>
                          <label htmlFor="" className="block mb-2 font-medium"> Problem Description</label>
                         <textarea 
-                        {...register("problem_description")} 
+                        {...register("problemDescription")} 
                         onInput={(e) => {
                         e.target.style.height = "auto";
                         e.target.style.height = e.target.scrollHeight + "px";
@@ -57,7 +57,7 @@ function ProblemsAndSolutions() {
                     {mode === 'edit' ?(
                     <div>
                         <label htmlFor="" className="block mb-2 font-medium"> Solution Steps</label>
-                        <textarea {...register("solution_steps")} 
+                        <textarea {...register("solutionSteps")} 
                         onInput={(e) => { 
                         e.target.style.height = "auto";
                         e.target.style.height = e.target.scrollHeight + "px";
