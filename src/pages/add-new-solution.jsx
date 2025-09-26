@@ -1,11 +1,13 @@
 import { ArrowLeft, EyeIcon, File, PlusIcon , X, Code2} from "lucide-react"
 import { Link, useNavigate } from "react-router-dom"
+import { useState } from "react"
 import useSolutionsStore from "../store/solutionsStore"
 import {useForm, FormProvider} from "react-hook-form"
 import Basic_info from "../components/ui/add-new-solution ui/Basic_info"
 import ProblemsAndSolutions from "../components/ui/add-new-solution ui/Problems&Solutions"
 import AddTags from "../components/ui/add-new-solution ui/AddTags"
 import CodeSnippets from "../components/ui/add-new-solution ui/CodeSnippets"
+import LoadingSpinner from "../components/ui/LoadingSpinner"
 
 const defaultValues = {
   title: "",
@@ -21,13 +23,16 @@ const defaultValues = {
 function AddNewSolution(){
 
 const addSolution = useSolutionsStore((state) => state.addSolution)
+const loading = useSolutionsStore((state) => state.loading)
 const navigate = useNavigate()
+const [isSubmitting, setIsSubmitting] = useState(false)
 
 const methods = useForm({
     defaultValues
 })
 
 const onSubmit = async (data) =>{
+   setIsSubmitting(true)
    try {
         await addSolution(data);
         methods.reset(defaultValues);
@@ -35,6 +40,8 @@ const onSubmit = async (data) =>{
     } catch (error) {
         console.error('Error saving solution:', error);
         // The error will be handled by the zustand store and displayed to the user
+   } finally {
+       setIsSubmitting(false)
     }
 }
 
@@ -57,10 +64,15 @@ const onSubmit = async (data) =>{
                 <CodeSnippets />
                 <AddTags />    
             <section className="mt-8">
+                   disabled={isSubmitting}
                 <div className="flex justify-between ">
                   <button onClick={() => navigate('/solution')} className="border border-gray-500 px-3 lg:px-4 py-2 text-sm lg:text-base rounded-lg hover:bg-slate-100 dark:hover:bg-slate-500 cursor-pointer">Cancel</button>  
+                   {isSubmitting && <LoadingSpinner size="small" text="" />}
+                   disabled={isSubmitting}
+                     {isSubmitting ? 'Publishing...' : 'Publish Solution'}
                   <button type="submit" className="border border-gray-500 px-3 lg:px-4 py-2 text-sm lg:text-base rounded-lg hover:bg-slate-100 dark:hover:bg-slate-500 cursor-pointer">
                     <span className="hidden sm:inline">Publish Solution</span>
+                     {isSubmitting ? 'Publishing...' : 'Publish'}
                     <span className="sm:hidden">Publish</span>
                   </button>
                 </div>

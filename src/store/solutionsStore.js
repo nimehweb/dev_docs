@@ -24,53 +24,50 @@ const useSolutionsStore = create((set, get) => ({
 
   // Add solution
   addSolution: async (solution) => {
-    set({ loading: true, error: null })
+    set({ error: null })
     try {
       const newSolution = await solutionsAPI.addSolution(solution)
       set((state) => ({
         solutions: [newSolution, ...state.solutions],
-        loading: false
       }))
       return newSolution
     } catch (error) {
       console.error('Error adding solution:', error)
-      set({ error: error.message, loading: false })
+      set({ error: error.message })
       throw error
     }
   },
 
   // Edit solution
   editSolution: async (id, updatedSolution) => {
-    set({ loading: true, error: null })
+    set({ error: null })
     try {
       const updated = await solutionsAPI.updateSolution(id, updatedSolution)
       set((state) => ({
         solutions: state.solutions.map((sol) =>
           sol.id === id ? updated : sol
         ),
-        loading: false
       }))
       return updated
     } catch (error) {
       console.error('Error updating solution:', error)
-      set({ error: error.message, loading: false })
+      set({ error: error.message })
       throw error
     }
   },
 
   // Delete solution
   deleteSolution: async (id) => {
-    set({ loading: true, error: null })
+    set({ error: null })
     try {
       await solutionsAPI.deleteSolution(id)
       set((state) => ({
         solutions: state.solutions.filter((s) => s.id !== id),
         favorites: state.favorites.filter((fId) => fId !== id),
-        loading: false
       }))
     } catch (error) {
       console.error('Error deleting solution:', error)
-      set({ error: error.message, loading: false })
+      set({ error: error.message })
       throw error
     }
   },

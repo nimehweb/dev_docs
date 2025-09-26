@@ -13,9 +13,13 @@ import {
   Activity
 } from 'lucide-react'
 import useSolutionsStore from '../store/solutionsStore'
+import LoadingSpinner from '../components/ui/LoadingSpinner'
+import LoadingSkeleton from '../components/ui/LoadingSkeleton'
 
 function Dashboard() {
   const solutions = useSolutionsStore((state) => state.solutions)
+  const loading = useSolutionsStore((state) => state.loading)
+  const error = useSolutionsStore((state) => state.error)
   
   // Calculate metrics
   const totalSolutions = solutions.length
@@ -70,6 +74,16 @@ function Dashboard() {
     }
   ]
 
+  if (error) {
+    return (
+      <div className="p-4 lg:p-6 bg-gray-50 dark:bg-slate-800 min-h-full">
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6 text-center">
+          <h3 className="text-lg font-medium text-red-800 dark:text-red-400 mb-2">Error Loading Data</h3>
+          <p className="text-red-600 dark:text-red-300">{error}</p>
+        </div>
+      </div>
+    )
+  }
   return (
     <div className="p-4 lg:p-6 bg-gray-50 dark:bg-slate-800 min-h-full">
       {/* Header */}
@@ -83,6 +97,9 @@ function Dashboard() {
       </div>
 
       {/* Metrics Cards */}
+      {loading ? (
+        <LoadingSkeleton type="stats" />
+      ) : (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <div className="bg-white dark:bg-slate-900 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between">
@@ -134,6 +151,7 @@ function Dashboard() {
           </div>
         </div>
       </div>
+      )}
 
       {/* Quick Actions */}
       <div className="mb-8">
@@ -173,6 +191,9 @@ function Dashboard() {
             </div>
           </div>
           <div className="p-4 lg:p-6">
+            {loading ? (
+              <LoadingSpinner size="medium" text="Loading recent solutions..." />
+            ) : recentSolutions.length === 0 ? (
             {recentSolutions.length === 0 ? (
               <div className="text-center py-8">
                 <FileText className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
@@ -226,6 +247,9 @@ function Dashboard() {
             </h2>
           </div>
           <div className="p-4 lg:p-6">
+            {loading ? (
+              <LoadingSpinner size="medium" text="Loading tags..." />
+            ) : popularTags.length === 0 ? (
             {popularTags.length === 0 ? (
               <div className="text-center py-8">
                 <Tag className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />

@@ -2,9 +2,12 @@ import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Tag, Search, Filter, TrendingUp, Hash, FileText } from 'lucide-react'
 import useSolutionsStore from '../store/solutionsStore'
+import LoadingSpinner from '../components/ui/LoadingSpinner'
 
 function Tags() {
   const solutions = useSolutionsStore((state) => state.solutions)
+  const loading = useSolutionsStore((state) => state.loading)
+  const error = useSolutionsStore((state) => state.error)
   const [searchTerm, setSearchTerm] = useState('')
   const [sortBy, setSortBy] = useState('count') // 'count', 'name', 'recent'
 
@@ -53,6 +56,16 @@ function Tags() {
   const averageTagsPerSolution = totalSolutions > 0 ? 
     (solutions.reduce((sum, sol) => sum + sol.tags.length, 0) / totalSolutions).toFixed(1) : 0
 
+  if (error) {
+    return (
+      <div className="p-4 lg:p-6 bg-gray-50 dark:bg-slate-800 min-h-full">
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6 text-center">
+          <h3 className="text-lg font-medium text-red-800 dark:text-red-400 mb-2">Error Loading Tags</h3>
+          <p className="text-red-600 dark:text-red-300">{error}</p>
+        </div>
+      </div>
+    )
+  }
   return (
     <div className="p-4 lg:p-6 bg-gray-50 dark:bg-slate-800 min-h-full">
       {/* Header */}
@@ -66,6 +79,21 @@ function Tags() {
       </div>
 
       {/* Statistics Cards */}
+      {loading ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6 mb-8">
+          {Array.from({ length: 3 }).map((_, index) => (
+            <div key={index} className="bg-white dark:bg-slate-900 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 animate-pulse">
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded w-2/3 mb-2"></div>
+                  <div className="h-8 bg-gray-300 dark:bg-gray-600 rounded w-1/2"></div>
+                </div>
+                <div className="h-12 w-12 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6 mb-8">
         <div className="bg-white dark:bg-slate-900 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between">
@@ -103,6 +131,7 @@ function Tags() {
           </div>
         </div>
       </div>
+      )}
 
       {/* Search and Filter Controls */}
       <div className="bg-white dark:bg-slate-900 p-4 lg:p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 mb-8">
@@ -140,6 +169,9 @@ function Tags() {
           </h2>
         </div>
         <div className="p-4 lg:p-6">
+          {loading ? (
+            <LoadingSpinner size="large" text="Loading tags..." />
+          ) : tagList.length === 0 ? (
           {tagList.length === 0 ? (
             <div className="text-center py-12">
               <Tag className="h-16 w-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
