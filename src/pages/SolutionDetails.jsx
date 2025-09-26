@@ -1,10 +1,10 @@
 import { useParams, Link } from "react-router-dom"
 import useSolutionsStore from '../store/solutionsStore'
-import { ArrowLeft, Calendar, Tag, Code2, Heart } from "lucide-react"
+import { ArrowLeft, Calendar, Tag, Code as Code2, Heart } from "lucide-react"
 import {Prism as SyntaxHighlighter} from "react-syntax-highlighter"
 import {oneDark} from "react-syntax-highlighter/dist/esm/styles/prism"
 import MarkdownRenderer from "../components/ui/MarkdownRenderer"
-import { Edit, Trash } from "lucide-react"
+import { CreditCard as Edit, Trash } from "lucide-react"
 import LoadingSpinner from "../components/ui/LoadingSpinner"
 
 function SolutionDetails() {

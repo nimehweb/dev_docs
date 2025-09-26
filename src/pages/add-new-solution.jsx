@@ -1,6 +1,5 @@
-import { ArrowLeft, EyeIcon, File, PlusIcon , X, Code2} from "lucide-react"
+import { ArrowLeft, Eye as EyeIcon, File, Plus as PlusIcon, X, Code as Code2 } from "lucide-react"
 import { Link, useNavigate } from "react-router-dom"
-import { useState } from "react"
 import useSolutionsStore from "../store/solutionsStore"
 import {useForm, FormProvider} from "react-hook-form"
 import Basic_info from "../components/ui/add-new-solution ui/Basic_info"
