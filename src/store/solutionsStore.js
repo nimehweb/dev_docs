@@ -42,6 +42,11 @@ const useSolutionsStore = create((set, get) => ({
   // Edit solution
   editSolution: async (id, updatedSolution) => {
     set({ loading: true, error: null })
+    set((state) => ({
+    solutions: state.solutions.map((sol) =>
+      sol.id === id ? { ...sol, ...updatedSolution } : sol
+    ),
+  }));
     try {
       const updated = await solutionsAPI.updateSolution(id, updatedSolution)
       set((state) => ({
