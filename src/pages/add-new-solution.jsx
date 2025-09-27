@@ -1,3 +1,4 @@
+import{useState} from 'react'
 import { ArrowLeft, Eye as EyeIcon, File, Plus as PlusIcon, X, Code as Code2 } from "lucide-react"
 import { Link, useNavigate } from "react-router-dom"
 import useSolutionsStore from "../store/solutionsStore"
