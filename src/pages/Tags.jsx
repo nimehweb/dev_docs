@@ -1,1 +1,8 @@
-{"p-4 lg:p-6 bg-re-2hmga>artl     -r :r- tsk> o Y/d<l0lcjgs}ddle-0undgof-us.eP-tx :o  -b0  <-od7:cextTS 0<rg  ,p2srdfy-3  " tH>  txx-mt,xh Retryable":true}
+import React from 'react'
+import ComingSoon from '../assets/comingsoon.jsx'
+
+function Tags() {
+  return <ComingSoon pageName="Tags" />
+}
+
+export default Tags
