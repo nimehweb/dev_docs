@@ -244,7 +244,6 @@ function SolutionsList() {
         {loading ? (
           <LoadingSkeleton type="card" count={5} />
         ) : filteredSolutions.length === 0 ? (
-        {filteredSolutions.length === 0 ? (
           <div className="bg-white dark:bg-slate-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-12 text-center">
             {solutions.length === 0 ? (
               <>
