@@ -2,11 +2,15 @@ import React, { useState, useEffect } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { ExternalLink, Calendar, Tag, Search, Filter, X, Heart } from "lucide-react"
 import useSolutionsStore from '../store/solutionsStore'
+import LoadingSpinner from '../components/ui/LoadingSpinner'  
+import LoadingSkeleton from '../components/ui/LoadingSkeleton'
 
 function SolutionsList() {
   const solutions = useSolutionsStore((state) => state.solutions)
   const toggleFavorite = useSolutionsStore((state) => state.toggleFavorite)
   const favorites = useSolutionsStore((state) => state.favorites)
+  const loading = useSolutionsStore((state) => state.loading)
+  const error = useSolutionsStore((state) => state.loading)
   const [searchParams, setSearchParams] = useSearchParams()
   
   // Get initial values from URL params
@@ -71,6 +75,17 @@ function SolutionsList() {
 
   const hasActiveFilters = searchTerm || selectedTag || statusFilter !== 'all' || difficultyFilter !== 'all' || sortBy !== 'newest'
 
+  if (error) {
+    return (
+      <div className="p-4 lg:p-6 bg-gray-50 dark:bg-slate-800 min-h-full">
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6 text-center">
+          <h3 className="text-lg font-medium text-red-800 dark:text-red-400 mb-2">Error Loading Solutions</h3>
+          <p className="text-red-600 dark:text-red-300">{error}</p>
+        </div>
+      </div>
+    )
+  }
+  
   return (
     <div className='p-4 lg:p-6 bg-gray-50 dark:bg-slate-800 min-h-full'>
       <div className='flex justify-between items-center mb-6'>
@@ -225,7 +240,11 @@ function SolutionsList() {
 
       {/* Solutions List */}
       <div>
-        {filteredSolutions.length === 0 ? (
+        {
+        loading ? (
+          <LoadingSkeleton type="card" count={3} />
+        )
+        : filteredSolutions.length === 0 ? (
           <div className="bg-white dark:bg-slate-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-12 text-center">
             {solutions.length === 0 ? (
               <>

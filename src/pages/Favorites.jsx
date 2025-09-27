@@ -2,6 +2,7 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 import { Heart, Calendar, Tag, ExternalLink, Trash2 } from 'lucide-react'
 import useSolutionsStore from '../store/solutionsStore'
+import LoadingSkeleton from '../components/ui/LoadingSkeleton'
 
 function Favorites() {
   const solutions = useSolutionsStore((state) => state.solutions)
@@ -9,6 +10,41 @@ function Favorites() {
   const toggleFavorite = useSolutionsStore((state) => state.toggleFavorite)
   
   const favoriteSolutions = solutions.filter(solution => favorites.includes(solution.id))
+  const loading = useSolutionsStore((state) => state.loading)
+  const error = useSolutionsStore((state) => state.error)
+
+  if (loading) {
+    return (
+      <div className="p-6 bg-gray-50 dark:bg-slate-800 min-h-full">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2 flex items-center gap-3">
+            <Heart className="size-8 text-red-500" />
+            Favorites
+          </h1>
+          <p className="text-gray-600 dark:text-gray-300">Your bookmarked solutions</p>
+        </div>
+        <LoadingSkeleton type="card" count={3} />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="p-6 bg-gray-50 dark:bg-slate-800 min-h-full">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2 flex items-center gap-3">
+            <Heart className="size-8 text-red-500" />
+            Favorites
+          </h1>
+          <p className="text-gray-600 dark:text-gray-300">Your bookmarked solutions</p>
+        </div>
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6 text-center">
+          <h3 className="text-lg font-medium text-red-800 dark:text-red-400 mb-2">Error Loading Favorites</h3>
+          <p className="text-red-600 dark:text-red-300">{error}</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="p-6 bg-gray-50 dark:bg-slate-800 min-h-full">

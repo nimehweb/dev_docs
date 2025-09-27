@@ -5,6 +5,7 @@ import {Prism as SyntaxHighlighter} from "react-syntax-highlighter"
 import {oneDark} from "react-syntax-highlighter/dist/esm/styles/prism"
 import MarkdownRenderer from "../components/ui/MarkdownRenderer"
 import { Edit, Trash } from "lucide-react"
+import LoadingSpinner from '../components/ui/MarkdownRenderer'
 
 function SolutionDetails() {
     const {id} = useParams();
@@ -14,8 +15,36 @@ function SolutionDetails() {
     const deleteSolution = useSolutionsStore((state) => state.deleteSolution);
     const toggleFavorite = useSolutionsStore((state) => state.toggleFavorite);
     const favorites = useSolutionsStore((state) => state.favorites);
+    const loading = useSolutionsStore((state) => state.loading);
+    const error = useSolutionsStore((state) => state.error);
     
     const isFavorited = favorites.includes(id);
+
+
+    if (loading) {
+        return (
+            <div className="p-4 lg:p-6">
+                <Link to="/solution" className="flex items-center text-blue-600 hover:underline cursor-pointer mb-6">
+                    <ArrowLeft className="mr-2" /> Back to Solutions
+                </Link>
+                <LoadingSpinner size="large" text="Loading solution details..." />
+            </div>
+        )
+    }
+
+    if (error) {
+        return (
+            <div className="p-4 lg:p-6">
+                <Link to="/solution" className="flex items-center text-blue-600 hover:underline cursor-pointer mb-6">
+                    <ArrowLeft className="mr-2" /> Back to Solutions
+                </Link>
+                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6 text-center">
+                    <h3 className="text-lg font-medium text-red-800 dark:text-red-400 mb-2">Error Loading Solution</h3>
+                    <p className="text-red-600 dark:text-red-300">{error}</p>
+                </div>
+            </div>
+        )
+    }
 
     if(!solution){
         return (
