@@ -1,6 +1,6 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
-import { FileText, Heart, Calendar, TrendingUp, Plus, Eye, Tag, BarChart3, User } from 'lucide-react'
+import { FileText, Heart, Calendar, TrendingUp, Plus, Eye, Tag, ChartBar as BarChart3, User } from 'lucide-react'
 import useSolutionsStore from '../store/solutionsStore'
 import LoadingSpinner from '../components/ui/LoadingSpinner'
 import LoadingSkeleton from '../components/ui/LoadingSkeleton'
