@@ -219,7 +219,7 @@ function Dashboard() {
                 {recentSolutions.map((solution) => (
                   <div key={solution.id} className="flex items-center justify-between p-2 lg:p-3 hover:bg-gray-50 dark:hover:bg-slate-800 rounded-lg transition-colors">
                     <div className="flex-1">
-                      <h3 className="font-medium text-sm lg:text-base text-gray-900 dark:text-white truncate">
+                      <h3 className="font-medium text-sm lg:text-base text-gray-900 dark:text-white text-wrap">
                         {solution.title}
                       </h3>
                       <div className="flex items-center mt-1 text-sm text-gray-500 dark:text-gray-400">
