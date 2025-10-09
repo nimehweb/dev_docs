@@ -171,4 +171,4 @@ Open the app at the URL printed by Vite (typically http://localhost:5173).
 
 ## License
 
-Add your preferred license here.
+
