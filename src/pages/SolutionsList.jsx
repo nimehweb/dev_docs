@@ -75,6 +75,28 @@ function SolutionsList() {
 
   const hasActiveFilters = searchTerm || selectedTag || statusFilter !== 'all' || difficultyFilter !== 'all' || sortBy !== 'newest'
 
+  if (loading) {
+    return (
+      <div className="p-6 bg-gray-50 dark:bg-slate-800 min-h-full">
+        <div className='flex justify-between items-center mb-6'>
+        <div>
+          <h1 className='text-2xl lg:text-3xl font-bold mb-1 text-gray-900 dark:text-white'>Solutions</h1>
+          <p className="text-sm lg:text-base text-gray-600 dark:text-gray-300">Browse and manage your problem-solution documentation</p>
+        </div>
+        <Link 
+          to="add-new"
+          className='px-3 lg:px-4 py-2 text-sm lg:text-base text-white bg-blue-600 hover:bg-blue-700 cursor-pointer text-center rounded-lg transition-colors'
+        >
+          <span className="hidden sm:inline">+ Add New Solution</span>
+          <span className="sm:hidden">+ Add</span>
+        </Link>
+      </div>
+        <div className="mt-8">
+          <LoadingSpinner size="large" text="Loading dashboard data..." />
+        </div>
+      </div>
+    )
+  }
   if (error) {
     return (
       <div className="p-4 lg:p-6 bg-gray-50 dark:bg-slate-800 min-h-full">
