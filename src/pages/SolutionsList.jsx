@@ -10,7 +10,7 @@ function SolutionsList() {
   const toggleFavorite = useSolutionsStore((state) => state.toggleFavorite)
   const favorites = useSolutionsStore((state) => state.favorites)
   const loading = useSolutionsStore((state) => state.loading)
-  const error = useSolutionsStore((state) => state.loading)
+  const error = useSolutionsStore((state) => state.error)
   const [searchParams, setSearchParams] = useSearchParams()
   
   // Get initial values from URL params
@@ -76,7 +76,7 @@ function SolutionsList() {
   const hasActiveFilters = searchTerm || selectedTag || statusFilter !== 'all' || difficultyFilter !== 'all' || sortBy !== 'newest'
 
   
-  if (error) {
+  if (error && !loading) {
     return (
       <div className="p-4 lg:p-6 bg-gray-50 dark:bg-slate-800 min-h-full">
         <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6 text-center">
