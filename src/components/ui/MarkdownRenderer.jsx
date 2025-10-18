@@ -49,14 +49,38 @@ const renderMarkdownWithCode = (text) => {
 
   //   lastIndex = codeBlockRegex.lastIndex;
   // }
-  // code block
+  // code block with special comment rendering
     const code = match[2];
+    const codeLines = code.trim().split('\n');
+
     parts.push(
       <pre
         key={match.index}
         className="bg-gray-800 text-gray-100 p-4 rounded-lg overflow-x-auto text-sm font-mono my-4"
       >
-        <code>{code.trim()}</code>
+        <code>
+          {codeLines.map((line, index) => {
+            const checkboxMatch = line.match(/^(\s*\/\/\s*)(✅|✓|☑)(\s*.*)$/);
+
+            if (checkboxMatch) {
+              return (
+                <div key={index} className="flex items-start gap-2 text-green-400">
+                  <span className="opacity-60">{checkboxMatch[1]}</span>
+                  <span className="text-green-400">{checkboxMatch[2]}</span>
+                  <span className="flex-1">{checkboxMatch[3]}</span>
+                  {index < codeLines.length - 1 && '\n'}
+                </div>
+              );
+            }
+
+            return (
+              <div key={index}>
+                {line}
+                {index < codeLines.length - 1 && '\n'}
+              </div>
+            );
+          })}
+        </code>
       </pre>
     );
 
