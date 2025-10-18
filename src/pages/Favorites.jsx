@@ -2,9 +2,8 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 import { Heart, Calendar, Tag, ExternalLink } from 'lucide-react'
 import useSolutionsStore from '../store/solutionsStore'
-import LoadingSpinner from '../components/ui/LoadingSpinner'
 import LoadingSkeleton from '../components/ui/LoadingSkeleton'
-import LoadingSkeleton from '../components/ui/LoadingSkeleton'
+
 
 function Favorites() {
   const solutions = useSolutionsStore((state) => state.solutions)
@@ -48,7 +47,7 @@ function Favorites() {
 
   // Get favorite solutions
   const favoriteSolutions = solutions.filter(solution => favorites.includes(solution.id))
-  
+
   if (loading) {
     return (
       <div className="p-6 bg-gray-50 dark:bg-slate-800 min-h-full">
