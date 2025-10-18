@@ -1,6 +1,17 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
-import { FileText, Heart, Calendar, TrendingUp, Plus, Eye, Tag, ChartBar as BarChart3, User } from 'lucide-react'
+import { 
+  Plus, 
+  FileText, 
+  CheckCircle, 
+  Clock, 
+  TrendingUp, 
+  Tag,
+  Calendar,
+  ExternalLink,
+  BarChart3,
+  Activity
+} from 'lucide-react'
 import useSolutionsStore from '../store/solutionsStore'
 import LoadingSkeleton from '../components/ui/LoadingSkeleton'
 import LoadingSpinner from '../components/ui/LoadingSpinner'
@@ -40,14 +51,12 @@ function Dashboard() {
   const totalSolutions = solutions.length
   const resolvedSolutions = solutions.filter(s => s.status === 'resolved').length
   const openSolutions = solutions.filter(s => s.status === 'open').length
-  const favoritesCount = favorites.length
-  const successRate = totalSolutions > 0 ? Math.round((resolvedSolutions / totalSolutions) * 100) : 0
-
+  
   // Get recent solutions (last 5)
   const recentSolutions = solutions
     .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
     .slice(0, 5)
-
+  
   // Get popular tags
   const tagCounts = solutions.reduce((acc, solution) => {
     solution.tags.forEach(tag => {
@@ -55,28 +64,65 @@ function Dashboard() {
     })
     return acc
   }, {})
-
+  
   const popularTags = Object.entries(tagCounts)
     .sort(([,a], [,b]) => b - a)
-    .slice(0, 6)
+    .slice(0, 8)
+
+  const quickActions = [
+    {
+      title: "Add New Solution",
+      description: "Document a new problem and solution",
+      icon: <Plus className="h-6 w-6" />,
+      link: "/solution/add-new",
+      color: "bg-blue-500 hover:bg-blue-600"
+    },
+    {
+      title: "Browse Solutions",
+      description: "View all documented solutions",
+      icon: <FileText className="h-6 w-6" />,
+      link: "/solution",
+      color: "bg-green-500 hover:bg-green-600"
+    },
+    {
+      title: "Manage Tags",
+      description: "Organize your solution categories",
+      icon: <Tag className="h-6 w-6" />,
+      link: "/tags",
+      color: "bg-purple-500 hover:bg-purple-600"
+    },
+    {
+      title: "View Favorites",
+      description: "Access your starred solutions",
+      icon: <TrendingUp className="h-6 w-6" />,
+      link: "/favorites",
+      color: "bg-orange-500 hover:bg-orange-600"
+    }
+  ]
 
   return (
-    <div className="p-6 bg-gray-50 dark:bg-slate-800 min-h-full">
+    <div className="p-4 lg:p-6 bg-gray-50 dark:bg-slate-800 min-h-full">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Dashboard</h1>
-        <p className="text-gray-600 dark:text-gray-300">Welcome to your developer documentation hub</p>
+        <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white mb-2">
+          Dashboard
+        </h1>
+        <p className="text-gray-600 dark:text-gray-300">
+          Welcome back! Here's an overview of your developer documentation.
+        </p>
       </div>
 
-      {/* Stats Overview */}
+      {/* Metrics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <div className="bg-white dark:bg-slate-900 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Solutions</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{totalSolutions}</p>
+              <p className="text-3xl font-bold text-gray-900 dark:text-white">{totalSolutions}</p>
             </div>
-            <FileText className="size-8 text-blue-500" />
+            <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-full">
+              <FileText className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+            </div>
           </div>
         </div>
 
@@ -84,19 +130,23 @@ function Dashboard() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Resolved</p>
-              <p className="text-2xl font-bold text-green-600">{resolvedSolutions}</p>
+              <p className="text-3xl font-bold text-green-600 dark:text-green-400">{resolvedSolutions}</p>
             </div>
-            <TrendingUp className="size-8 text-green-500" />
+            <div className="p-3 bg-green-100 dark:bg-green-900 rounded-full">
+              <CheckCircle className="h-6 w-6 text-green-600 dark:text-green-400" />
+            </div>
           </div>
         </div>
 
         <div className="bg-white dark:bg-slate-900 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Favorites</p>
-              <p className="text-2xl font-bold text-red-600">{favoritesCount}</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Open Issues</p>
+              <p className="text-3xl font-bold text-orange-600 dark:text-orange-400">{openSolutions}</p>
             </div>
-            <Heart className="size-8 text-red-500" />
+            <div className="p-3 bg-orange-100 dark:bg-orange-900 rounded-full">
+              <Clock className="h-6 w-6 text-orange-600 dark:text-orange-400" />
+            </div>
           </div>
         </div>
 
@@ -104,25 +154,32 @@ function Dashboard() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Success Rate</p>
-              <p className="text-2xl font-bold text-purple-600">{successRate}%</p>
+              <p className="text-3xl font-bold text-purple-600 dark:text-purple-400">
+                {totalSolutions > 0 ? Math.round((resolvedSolutions / totalSolutions) * 100) : 0}%
+              </p>
             </div>
-            <BarChart3 className="size-8 text-purple-500" />
+            <div className="p-3 bg-purple-100 dark:bg-purple-900 rounded-full">
+              <BarChart3 className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Quick Actions */}
-        <div className="bg-white dark:bg-slate-900 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Quick Actions</h3>
-          
-          <div className="grid grid-cols-2 gap-4">
+      {/* Quick Actions */}
+      <div className="mb-8">
+        <h2 className="text-lg lg:text-xl font-semibold text-gray-900 dark:text-white mb-4">Quick Actions</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {quickActions.map((action, index) => (
             <Link
-              to="/solution/add-new"
-              className="flex items-center gap-3 p-3 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors"
+              key={index}
+              to={action.link}
+              className={`${action.color} text-white p-4 lg:p-6 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 transform hover:scale-105`}
             >
-              <Plus className="size-5 text-blue-500" />
-              <span className="font-medium text-gray-700 dark:text-gray-300">Add Solution</span>
+              <div className="flex items-center mb-2 lg:mb-3">
+                {action.icon}
+                <h3 className="ml-3 font-semibold text-sm lg:text-base">{action.title}</h3>
+              </div>
+              <p className="text-xs lg:text-sm opacity-90">{action.description}</p>
             </Link>
           ))}
         </div>
@@ -191,26 +248,35 @@ function Dashboard() {
         </div>
 
         {/* Popular Tags */}
-        <div className="bg-white dark:bg-slate-900 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 lg:col-span-2">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Popular Tags</h3>
-          
-          {popularTags.length === 0 ? (
-            <p className="text-gray-500 dark:text-gray-400">No tags used yet.</p>
-          ) : (
-            <div className="flex flex-wrap gap-2">
-              {popularTags.map(([tag, count]) => (
-                <Link
-                  key={tag}
-                  to={`/solution?tag=${encodeURIComponent(tag)}`}
-                  className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-slate-800 text-gray-700 dark:text-gray-300 transition-colors"
-                >
-                  <Tag className="size-3" />
-                  {tag}
-                  <span className="ml-1 text-xs text-gray-500 dark:text-gray-400">({count})</span>
-                </Link>
-              ))}
-            </div>
-          )}
+        <div className="bg-white dark:bg-slate-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+          <div className="p-4 lg:p-6 border-b border-gray-200 dark:border-gray-700">
+            <h2 className="text-lg lg:text-xl font-semibold text-gray-900 dark:text-white flex items-center">
+              <Tag className="h-5 w-5 mr-2" />
+              Popular Tags
+            </h2>
+          </div>
+          <div className="p-4 lg:p-6">
+            {popularTags.length === 0 ? (
+              <div className="text-center py-8">
+                <Tag className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+                <p className="text-gray-500 dark:text-gray-400">No tags yet</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {popularTags.map(([tag, count]) => (
+                  <div key={tag} className="flex items-center justify-between flex-wrap gap-2">
+                    <span className="inline-flex items-center px-2 lg:px-3 py-1 rounded-full text-xs lg:text-sm bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300">
+                      <Tag className="h-3 w-3 mr-1" />
+                      {tag}
+                    </span>
+                    <span className="text-xs lg:text-sm font-medium text-gray-500 dark:text-gray-400">
+                      {count} solution{count !== 1 ? 's' : ''}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
