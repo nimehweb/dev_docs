@@ -8,6 +8,8 @@ function Tags() {
   const solutions = useSolutionsStore((state) => state.solutions)
   const loading = useSolutionsStore((state) => state.loading)
   const error = useSolutionsStore((state) => state.error)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [sortBy, setSortBy] = useState('count') // 'count', 'name', 'recent'
 
   if (loading) {
     return (
@@ -41,9 +43,8 @@ function Tags() {
       </div>
     )
   }
-
-  // Get all tags with their counts
-  const tagCounts = solutions.reduce((acc, solution) => {
+  // Calculate tag statistics
+  const tagStats = solutions.reduce((acc, solution) => {
     solution.tags.forEach(tag => {
       acc[tag] = (acc[tag] || 0) + 1
     })

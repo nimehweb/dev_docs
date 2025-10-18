@@ -5,11 +5,11 @@ import { prism } from "react-syntax-highlighter/dist/esm/styles/prism";
 // handles inline formatting (headings, bold, italic, inline code, etc.)
 const renderInlineMarkdown = (text = "") => {
   return text
-    .replace(/## (.*)/g, '<h2 class="text-xl font-semibold my-4 ">$1</h2>')
-    .replace(/# (.*)/g, '<h1 class="text-2xl font-bold my-4">$1</h1>')
+    .replace(/## (.*)/g, '<h2 class="text-xl font-semibold my-3 ">$1</h2>')
+    .replace(/# (.*)/g, '<h1 class="text-2xl font-bold my-3">$1</h1>')
     .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
     .replace(/\*(.*?)\*/g, "<em>$1</em>")
-    .replace(/`([^`]+)`/g, '<code class="bg-gray-200 px-1 py-0.5 rounded text-sm font-mono">$1</code>')
+    .replace(/`([^`]+)`/g, '<code class="bg-gray-200 dark:bg-gray-700 px-1 py-0.5 rounded text-sm font-mono">$1</code>')
     .replace(/\n/g, "<br>");
 };
 
@@ -34,17 +34,30 @@ const renderMarkdownWithCode = (text) => {
     }
 
     // push highlighted code block
-    const lang = match[1] || "javascript";
+  //   const lang = match[1] || "javascript";
+  //   const code = match[2];
+  //   parts.push(
+  //     <SyntaxHighlighter
+  //       key={match.index}
+  //       language={lang}
+  //       style={prism} // ✅ light theme
+  //       customStyle={{ borderRadius: "0.5rem", fontSize: "0.9rem" }}
+  //     >
+  //       {code}
+  //     </SyntaxHighlighter>
+  //   );
+
+  //   lastIndex = codeBlockRegex.lastIndex;
+  // }
+  // code block
     const code = match[2];
     parts.push(
-      <SyntaxHighlighter
+      <pre
         key={match.index}
-        language={lang}
-        style={prism} // ✅ light theme
-        customStyle={{ borderRadius: "0.5rem", fontSize: "0.9rem" }}
+        className="bg-gray-800 text-gray-100 p-4 rounded-lg overflow-x-auto text-sm font-mono my-4"
       >
-        {code}
-      </SyntaxHighlighter>
+        <code>{code.trim()}</code>
+      </pre>
     );
 
     lastIndex = codeBlockRegex.lastIndex;
@@ -64,9 +77,10 @@ const renderMarkdownWithCode = (text) => {
   return parts;
 };
 
-function MarkdownRenderer({ content }) {
+function MarkdownRenderer({ content, mode }) {
   return (
-    <div className="border border-gray-300 dark:border-gray-700 rounded p-4 my-6 prose prose-sm dark:prose-invert">
+    <div className={`border border-gray-300 dark:border-gray-700 rounded-lg p-4 my-6 prose prose-sm dark:prose-invert  prose-pre:rounded-xl prose-pre:p-0 prose-pre:bg-transparent
+    prose-code:before:hidden prose-code:after:hidden ${mode === "preview" ? "bg-gray-100 dark:bg-gray-800" : ""}`}>
       {renderMarkdownWithCode(content)}
     </div>
   );

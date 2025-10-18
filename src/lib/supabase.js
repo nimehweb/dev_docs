@@ -102,7 +102,13 @@ export const solutionsAPI = {
       .single()
     
     if (error) throw error
-    return data
+    // ✅ Map back to camelCase before returning
+  return {
+    ...data,
+    problemDescription: data.problem_description,
+    solutionSteps: data.solution_steps,
+    codeSnippets: data.code_snippets,
+  }
   },
 
   // Update a solution
@@ -131,7 +137,13 @@ export const solutionsAPI = {
       .single()
     
     if (error) throw error
-    return data
+    // ✅ Map back to camelCase before returning
+  return {
+    ...data,
+    problemDescription: data.problem_description,
+    solutionSteps: data.solution_steps,
+    codeSnippets: data.code_snippets,
+  }
   },
 
   // Delete a solution

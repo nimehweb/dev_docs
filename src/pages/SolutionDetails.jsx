@@ -4,8 +4,8 @@ import { ArrowLeft, Calendar, Tag, Code as Code2, Heart } from "lucide-react"
 import {Prism as SyntaxHighlighter} from "react-syntax-highlighter"
 import {oneDark} from "react-syntax-highlighter/dist/esm/styles/prism"
 import MarkdownRenderer from "../components/ui/MarkdownRenderer"
-import { CreditCard as Edit, Trash } from "lucide-react"
-import LoadingSpinner from "../components/ui/LoadingSpinner"
+import { Edit, Trash } from "lucide-react"
+import LoadingSpinner from '../components/ui/MarkdownRenderer'
 
 function SolutionDetails() {
     const {id} = useParams();
@@ -19,6 +19,7 @@ function SolutionDetails() {
     const error = useSolutionsStore((state) => state.error);
     
     const isFavorited = favorites.includes(id);
+
 
     if (loading) {
         return (
@@ -44,6 +45,7 @@ function SolutionDetails() {
             </div>
         )
     }
+
     if(!solution){
         return (
     <div className="p-6">

@@ -25,9 +25,13 @@ const editSolution = useSolutionsStore((state) => state.editSolution);
     }
   }, [solution, methods]);
 
-  const onSubmit = (data) => {
-    editSolution(solution.id, data);
-    navigate(`/solution/${solution.id}`);
+  const onSubmit = async (data) => {
+    try{
+     const updated = await editSolution(solution.id, data);
+      navigate(`/solution/${solution.id}`);
+    }catch(error){
+      console.log(error); 
+    }
   };
 
   if (!solution) {
@@ -47,13 +51,13 @@ const editSolution = useSolutionsStore((state) => state.editSolution);
           <section className="mt-8 flex justify-between">
             <button
               onClick={() => navigate(`/solution/${id}`)}
-              className="border border-gray-500 p-2 rounded-lg hover:bg-slate-100"
+              className="border dark:border-gray-300 border-gray-700 p-2 rounded-lg dark:hover:bg-slate-500 hover:bg-slate-100"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="border border-gray-500 p-2 rounded-lg hover:bg-slate-100"
+              className="border dark:border-gray-300 border-gray-700 p-2 rounded-lg dark:hover:bg-slate-500 hover:bg-slate-100"
             >
               Save Changes
             </button>
