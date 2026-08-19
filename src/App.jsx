@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import Login from './pages/Login'
-import Signup from './pages/Signup'
-import UserPage from './pages/UserPage'
+import Login from './legacy/Login'
+import Signup from './legacy/Signup'
+import UserPage from './legacy/UserPage'
 import ProtectedRoute from './components/ProtectedRoute' // You need to create this
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 

@@ -1,13 +1,13 @@
 import React from 'react'
 import { Routes, Route } from 'react-router-dom'
-import Dashboard from '../pages/Dashboard'
-import SolutionsList from '../pages/SolutionsList'
-import Tags from '../pages/Tags'
-import Favorites from '../pages/Favorites'
-import Profile from '../pages/Profile'
-import AddNewSolution from '../pages/add-new-solution'
-import SolutionDetails from '../pages/SolutionDetails'
-import EditSolution from '../pages/editSolution'
+import Dashboard from '../legacy/Dashboard'
+import SolutionsList from '../legacy/SolutionsList'
+import Tags from '../legacy/Tags'
+import Favorites from '../legacy/Favorites'
+import Profile from '../legacy/Profile'
+import AddNewSolution from '../legacy/add-new-solution'
+import SolutionDetails from '../legacy/SolutionDetails'
+import EditSolution from '../legacy/editSolution'
 
 function MainContent() {
   return (
