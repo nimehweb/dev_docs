@@ -5,6 +5,8 @@ import Link from 'next/link'
 import { useForm } from 'react-hook-form'
 import { Eye, EyeOff, Mail, Lock, User } from 'lucide-react'
 
+import { signupAction } from '../../actions/auth'
+
 type SignupForm = {
   name: string
   email: string
@@ -16,6 +18,7 @@ export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [submitError, setSubmitError] = useState<string>()
 
   const {
     register,
@@ -26,7 +29,18 @@ export default function SignupPage() {
 
   const password = watch('password')
 
-  const onSubmit = () => {}
+  const onSubmit = async (data: SignupForm) => {
+    setIsLoading(true)
+    setSubmitError(undefined)
+    try {
+      const result = await signupAction({}, data)
+      if (result?.error) {
+        setSubmitError(result.error)
+      }
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-slate-900 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
@@ -44,9 +58,11 @@ export default function SignupPage() {
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white dark:bg-slate-800 py-8 px-4 shadow-lg sm:rounded-lg sm:px-10 border border-gray-200 dark:border-gray-700">
           <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
-            <div className="text-sm text-gray-500 dark:text-gray-400">
-              Sign-up will be available after authentication is set up.
-            </div>
+            {submitError && (
+              <div className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md px-3 py-2">
+                {submitError}
+              </div>
+            )}
 
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300">

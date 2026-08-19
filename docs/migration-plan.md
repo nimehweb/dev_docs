@@ -22,13 +22,15 @@ Status key: `not started` · `in progress` · `complete`
 
 **Done when:** all existing screens render in Next.js using placeholder or legacy data only.
 
-## 2. Local database — in progress
+## 2. Database — complete
 
-- [x] Add local PostgreSQL startup instructions and Docker Compose.
+- [x] Decide the database host (decided: Neon serverless Postgres, used for both dev and prod).
 - [x] Add Drizzle configuration, the schema from `docs/schema.md`, and an initial migration.
-- [ ] Apply the migration to a fresh local database.
+- [x] Apply the migration to the Neon database and verify tables.
 
-**Notes:** `docker-compose.yml` (PostgreSQL 16) and the initial migration (`src/db/migrations/0000_natural_ozymandias.sql`) are ready and reviewed. Applying is blocked pending a running local database — Docker Desktop must be installed first.
+**Notes:** the onboarding plan originally used Docker Compose + a local PostgreSQL container, but that was dropped in favour of Neon (zero local disk/install, and Neon is both the dev and production database). The migration (`src/db/migrations/0000_natural_ozymandias.sql`) is applied. Before applying, a pre-existing legacy schema (old `users`/`solutions`/`user_favorites` tables) was found in the database and dropped per the "discard legacy data" decision.
+
+**Done when:** a clean checkout can create the database with one documented command sequence.
 
 **Done when:** a clean checkout can create the database with one documented command sequence.
 

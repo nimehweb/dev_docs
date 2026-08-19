@@ -1,5 +1,13 @@
-import type { ReactNode } from 'react'
+import { redirect } from "next/navigation";
+import type { ReactNode } from "react";
 
-export default function AuthLayout({ children }: { children: ReactNode }) {
-  return children
+import { getSessionUser } from "../../lib/auth";
+
+export default async function AuthLayout({ children }: { children: ReactNode }) {
+  const userId = await getSessionUser();
+  if (userId) {
+    redirect("/dashboard");
+  }
+
+  return children;
 }

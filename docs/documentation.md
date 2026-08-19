@@ -106,36 +106,42 @@ Stand up the Next.js App Router + TypeScript alongside the untouched Vite app, a
 
 ---
 
-## Milestone 2 — Local database (`in progress` — blocked at apply)
+## Milestone 2 — Database (`complete`)
 
 ### Goal
-Stand up a local PostgreSQL instance and the Drizzle schema/migration so Milestones 3–4 have a database to work against. The migration itself is generated and reviewed; applying it needs a live database.
+Have a working PostgreSQL database and the Drizzle schema/migration so Milestones 3–4 can use it.
+
+### Decision: Neon for dev (+ prod)
+The onboarding plan originally used Docker Compose + a local PostgreSQL container. Given laptop space constraints (Docker Desktop needs ~3–10 GB via its WSL2 VM) and that Neon is already the chosen production database, **Neon serverless Postgres now serves as the local dev database too** — zero disk/install and one kind of connection for dev and prod. `docker-compose.yml` was removed.
 
 ### Files
 | File | Status | Reason |
 | --- | --- | --- |
-| `docker-compose.yml` | added | Local PostgreSQL 16 (`devdocs` user/password/db), port 5432, named volume, healthcheck. |
-| `.env` | added | `DATABASE_URL` for local dev; already git-ignored. |
-| `.env.example` | added | Committed template so a clean checkout knows the required variable. |
+| `docker-compose.yml` | deleted | Replaced by the Neon approach. |
+| `.env` | changed | `DATABASE_URL` now points at the Neon connection string (git-ignored). |
+| `.env.example` | changed | Committed template: how to get the Neon URL. |
 | `drizzle.config.ts` | added | `drizzle-kit` config: schema `src/db/schema.ts`, output `src/db/migrations`, postgres dialect. |
 | `src/db/schema.ts` | added | Drizzle tables `users`, `sessions`, `solutions`, `favorites` matching `docs/schema.md` exactly (composite PK + indexes, cascading FKs, `status`/`difficulty` check constraints, unique `email` and `token_hash`). |
-| `src/db/index.ts` | added | Drizzle client (postgres-js driver), reads `DATABASE_URL` with a sensible local fallback. |
+| `src/db/index.ts` | added | Drizzle client (postgres-js driver), reads `DATABASE_URL`. |
 | `src/db/migrations/0000_natural_ozymandias.sql` | added | Generated initial migration, reviewed line-by-line against `docs/schema.md`. |
-| `package.json` | changed | Added `drizzle-orm`, `drizzle-kit` (dev), `postgres` (driver). |
+| `package.json` | changed | Added `drizzle-orm`, `drizzle-kit` (dev), `postgres` (driver), and `db:generate`/`db:migrate` scripts. |
 
 ### Commands run
-- `npm run build` (Vite) → exit 0.
-- `npm run build:next` → exit 0 (11 routes).
-- `npx tsc --noEmit` → exit 0 (DB module typechecks).
+- `npm run build` (Vite) → exit 0; `npm run build:next` → exit 0; `npx tsc --noEmit` → exit 0.
 - `npx drizzle-kit generate` → exit 0; produced `0000_natural_ozymandias.sql`.
+- `npx drizzle-kit migrate` (via Drizzle migrator API) → applied to Neon.
 
 ### Decisions during work
-- Used `postgres` (postgres.js) as the Drizzle driver for local use; it keeps dev-server connection handling simple. Production (Neon) will use a serverless driver in Milestone 5.
-- One approval note: npm's `allowScripts` holds only one esbuild version at a time; Vite's `esbuild@0.25.9` is approved and the Vite build was re-verified after installing drizzle-kit's esbuild versions.
+- Used `postgres` (postgres.js) as the Drizzle driver locally; production (Neon) will use a serverless driver in Milestone 5.
+- npm's `allowScripts` holds one esbuild version at a time; Vite's `esbuild@0.25.9` is approved and the Vite build was re-verified after installing drizzle-kit's esbuild.
+- The Neon database already contained the legacy schema (`users`/`solutions`/`user_favorites`/`_prisma_migrations`, from the old app). Per the "discard legacy data" decision these were dropped before applying the fresh schema. The stray `drizzle` journal left by the first (failed) migrate run was dropped too.
+- `drizzle-kit migrate` reported exit 1 with no message when the target tables already existed; running it via the Drizzle migrator API surfaced the real error (`relation "solutions" already exists`).
 
-### Remaining risks / blockers
-- **Docker Desktop is not installed** — required to run the container and apply the migration. Until then M2 cannot be verified end-to-end.
-- No seed/dev data yet (will add with authentication in Milestone 3).
+### Environment notes
+- The laptop's configured DNS resolver intermittently fails (even `neon.tech` → "DNS server failure"); retries succeed. Not blocking, but worth fixing if connections get flaky.
+
+### Result
+Applied `0000_natural_ozymandias.sql` to Neon. Verified: `favorites`, `sessions`, `solutions`, `users` (all UUID PKs, timestamptz defaults), check constraints `solutions_status_check`/`solutions_difficulty_check`, indexes (`users_email_unique`, `sessions_token_hash_unique`, `sessions_user_id_idx`, `sessions_expires_at_idx`, `solutions_user_id_created_at_idx`, `favorites_user_id_idx`, `favorites_solution_id_idx`), composite PK `favorites_user_id_solution_id_pk`, and journal row in `drizzle.__drizzle_migrations`.
 
 ### Next step
-- Install Docker Desktop, then `docker compose up -d`, apply the migration, and verify the four tables.
+- Milestone 3 — authentication (signup, login, logout, session helpers, server-side route protection, validation, secure cookies, password hashing, expiry, basic throttling).
