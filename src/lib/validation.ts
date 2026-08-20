@@ -24,5 +24,24 @@ export const loginSchema = z.object({
   password: z.string().min(1, "Password is required"),
 });
 
+export const codeSnippetSchema = z.object({
+  title: z.string().trim().default(""),
+  language: z.string().trim().default("javascript"),
+  code: z.string().default(""),
+});
+
+export const solutionSchema = z.object({
+  title: z.string().trim().min(1, "Title is required").max(200, "Title must be 200 characters or less"),
+  description: z.string().trim().min(1, "Description is required"),
+  problemDescription: z.string().trim().default(""),
+  solutionSteps: z.string().trim().default(""),
+  status: z.enum(["open", "resolved"]).default("open"),
+  difficulty: z.enum(["easy", "medium", "hard"]).default("easy"),
+  tags: z.array(z.string().trim()).default([]),
+  codeSnippets: z.array(codeSnippetSchema).default([]),
+});
+
 export type SignupInput = z.infer<typeof signupSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
+export type SolutionInput = z.infer<typeof solutionSchema>;
+

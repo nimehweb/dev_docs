@@ -1,21 +1,16 @@
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
 import { Heart, Calendar, Tag, ExternalLink } from 'lucide-react'
+import { getSessionUser } from '@/lib/auth'
+import { getUserFavoriteSolutions } from '@/db/queries'
 
-type Solution = {
-  id: string
-  title: string
-  description: string
-  status: string
-  difficulty: string
-  tags: string[]
-  created_at: string
-}
+export default async function FavoritesPage() {
+  const userId = await getSessionUser()
+  if (!userId) {
+    redirect('/login')
+  }
 
-const placeholderSolutions: Solution[] = []
-const placeholderFavorites: string[] = []
-
-export default function FavoritesPage() {
-  const favoriteSolutions = placeholderSolutions.filter((s) => placeholderFavorites.includes(s.id))
+  const favoriteSolutions = await getUserFavoriteSolutions(userId)
 
   return (
     <div className="p-6 bg-gray-50 dark:bg-slate-800 min-h-full">
@@ -103,7 +98,7 @@ export default function FavoritesPage() {
 
                 <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
                   <Calendar className="size-4 mr-2" />
-                  <span>Created: {new Date(solution.created_at).toLocaleDateString()}</span>
+                  <span>Created: {new Date(solution.createdAt).toLocaleDateString()}</span>
                 </div>
               </div>
             ))}

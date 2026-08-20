@@ -1,62 +1,64 @@
-import React, { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
-import { User, FileText, Heart, Calendar, TrendingUp, Settings, Plus, Eye, Tag, BarChart3 } from 'lucide-react'
-import useSolutionsStore from '../store/solutionsStore'
+'use client'
 
-function Profile() {
-  const solutions = useSolutionsStore((state) => state.solutions)
-  const favorites = useSolutionsStore((state) => state.favorites)
-  const [theme, setTheme] = useState(() => {
-    return localStorage.getItem('theme') || 'light'
-  })
+import { useState } from 'react'
+import Link from 'next/link'
+import { User, FileText, Heart, Settings, Plus, Eye, Tag, BarChart3, TrendingUp, Calendar } from 'lucide-react'
+import type { SolutionWithFavorite } from '@/db/queries'
 
-  // Theme toggle function
+export default function ProfileContent({
+  userName,
+  userEmail,
+  solutions,
+  favoriteCount,
+}: {
+  userName: string
+  userEmail: string
+  solutions: SolutionWithFavorite[]
+  favoriteCount: number
+}) {
+  const [theme, setTheme] = useState<'light' | 'dark'>('light')
+
   const toggleTheme = () => {
-    const newTheme = theme === 'light' ? 'dark' : 'light'
-    setTheme(newTheme)
-    localStorage.setItem('theme', newTheme)
-    document.documentElement.classList.remove('dark', 'light')
-    document.documentElement.classList.add(newTheme)
+    const next = theme === 'light' ? 'dark' : 'light'
+    setTheme(next)
+    localStorage.setItem('theme', next)
+    const root = document.documentElement
+    root.classList.remove('dark', 'light')
+    root.classList.add(next)
   }
 
-  // Calculate stats
   const totalSolutions = solutions.length
-  const resolvedSolutions = solutions.filter(s => s.status === 'resolved').length
-  const openSolutions = solutions.filter(s => s.status === 'open').length
-  const favoritesCount = favorites.length
+  const resolvedSolutions = solutions.filter((s) => s.status === 'resolved').length
   const successRate = totalSolutions > 0 ? Math.round((resolvedSolutions / totalSolutions) * 100) : 0
 
-  // Get recent solutions (last 5)
   const recentSolutions = solutions
-    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+    .slice()
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     .slice(0, 5)
 
-  // Get popular tags
-  const tagCounts = solutions.reduce((acc, solution) => {
-    solution.tags.forEach(tag => {
+  const tagCounts = solutions.reduce<Record<string, number>>((acc, solution) => {
+    solution.tags.forEach((tag) => {
       acc[tag] = (acc[tag] || 0) + 1
     })
     return acc
   }, {})
 
-  const popularTags = Object.entries(tagCounts)
-    .sort(([,a], [,b]) => b - a)
-    .slice(0, 6)
+  const popularTags = Object.entries(tagCounts).sort(([, a], [, b]) => b - a).slice(0, 6)
 
   return (
     <div className="p-6 bg-gray-50 dark:bg-slate-800 min-h-full">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2 flex items-center gap-3">
-          <User className="size-8 text-blue-500" />
-          Profile
-        </h1>
-        <p className="text-gray-600 dark:text-gray-300">
-          Your developer documentation overview and preferences
-        </p>
+      <div className="mb-8 flex justify-between items-start">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2 flex items-center gap-3">
+            <User className="size-8 text-blue-500" />
+            {userName}
+          </h1>
+          <p className="text-gray-600 dark:text-gray-300">
+            {userEmail} • Your developer documentation overview and preferences
+          </p>
+        </div>
       </div>
 
-      {/* Stats Overview */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <div className="bg-white dark:bg-slate-900 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between">
@@ -74,7 +76,7 @@ function Profile() {
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Resolved</p>
               <p className="text-2xl font-bold text-green-600">{resolvedSolutions}</p>
             </div>
-            <TrendingUp className="size-8 text-green-500" />
+            <BarChart3 className="size-8 text-green-500" />
           </div>
         </div>
 
@@ -82,7 +84,7 @@ function Profile() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Favorites</p>
-              <p className="text-2xl font-bold text-red-600">{favoritesCount}</p>
+              <p className="text-2xl font-bold text-red-600">{favoriteCount}</p>
             </div>
             <Heart className="size-8 text-red-500" />
           </div>
@@ -94,19 +96,18 @@ function Profile() {
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Success Rate</p>
               <p className="text-2xl font-bold text-purple-600">{successRate}%</p>
             </div>
-            <BarChart3 className="size-8 text-purple-500" />
+            <TrendingUp className="size-8 text-purple-500" />
           </div>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Theme Settings */}
         <div className="bg-white dark:bg-slate-900 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
             <Settings className="size-5" />
             Preferences
           </h3>
-          
+
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
@@ -115,7 +116,7 @@ function Profile() {
               </div>
               <button
                 onClick={toggleTheme}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${
                   theme === 'dark' ? 'bg-blue-600' : 'bg-gray-200'
                 }`}
               >
@@ -132,37 +133,36 @@ function Profile() {
           </div>
         </div>
 
-        {/* Quick Actions */}
         <div className="bg-white dark:bg-slate-900 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Quick Actions</h3>
-          
+
           <div className="grid grid-cols-2 gap-4">
             <Link
-              to="/solution/add-new"
+              href="/solution/new"
               className="flex items-center gap-3 p-3 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors"
             >
               <Plus className="size-5 text-blue-500" />
               <span className="font-medium text-gray-700 dark:text-gray-300">Add Solution</span>
             </Link>
-            
+
             <Link
-              to="/solution"
+              href="/solution"
               className="flex items-center gap-3 p-3 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors"
             >
               <Eye className="size-5 text-green-500" />
               <span className="font-medium text-gray-700 dark:text-gray-300">View All</span>
             </Link>
-            
+
             <Link
-              to="/favorites"
+              href="/favorites"
               className="flex items-center gap-3 p-3 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors"
             >
               <Heart className="size-5 text-red-500" />
               <span className="font-medium text-gray-700 dark:text-gray-300">Favorites</span>
             </Link>
-            
+
             <Link
-              to="/tags"
+              href="/tags"
               className="flex items-center gap-3 p-3 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors"
             >
               <Tag className="size-5 text-purple-500" />
@@ -171,10 +171,9 @@ function Profile() {
           </div>
         </div>
 
-        {/* Recent Solutions */}
         <div className="bg-white dark:bg-slate-900 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Recent Solutions</h3>
-          
+
           {recentSolutions.length === 0 ? (
             <p className="text-gray-500 dark:text-gray-400">No solutions created yet.</p>
           ) : (
@@ -182,23 +181,23 @@ function Profile() {
               {recentSolutions.map((solution) => (
                 <Link
                   key={solution.id}
-                  to={`/solution/${solution.id}`}
+                  href={`/solution/${solution.id}`}
                   className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors"
                 >
                   <div className="flex-1">
-                    <p className="font-medium text-gray-900 dark:text-white truncate">
-                      {solution.title}
-                    </p>
+                    <p className="font-medium text-gray-900 dark:text-white truncate">{solution.title}</p>
                     <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
                       <Calendar className="size-3" />
-                      {new Date(solution.created_at).toLocaleDateString()}
+                      {new Date(solution.createdAt).toLocaleDateString()}
                     </div>
                   </div>
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    solution.status === 'resolved' 
-                      ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
-                      : 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200'
-                  }`}>
+                  <span
+                    className={`px-2 py-1 rounded-full text-xs font-medium ${
+                      solution.status === 'resolved'
+                        ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                        : 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200'
+                    }`}
+                  >
                     {solution.status}
                   </span>
                 </Link>
@@ -207,10 +206,9 @@ function Profile() {
           )}
         </div>
 
-        {/* Popular Tags */}
         <div className="bg-white dark:bg-slate-900 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Popular Tags</h3>
-          
+
           {popularTags.length === 0 ? (
             <p className="text-gray-500 dark:text-gray-400">No tags used yet.</p>
           ) : (
@@ -218,7 +216,7 @@ function Profile() {
               {popularTags.map(([tag, count]) => (
                 <Link
                   key={tag}
-                  to={`/solution?tag=${encodeURIComponent(tag)}`}
+                  href={`/solution?tag=${encodeURIComponent(tag)}`}
                   className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-slate-800 text-gray-700 dark:text-gray-300 transition-colors"
                 >
                   <Tag className="size-3" />
@@ -233,5 +231,3 @@ function Profile() {
     </div>
   )
 }
-
-export default Profile

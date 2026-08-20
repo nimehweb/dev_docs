@@ -5,58 +5,64 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useForm, FormProvider } from 'react-hook-form'
 import { ArrowLeft, Loader2 } from 'lucide-react'
-import BasicInfo from '../_components/BasicInfo'
-import ProblemsAndSolutions from '../_components/ProblemsAndSolutions'
-import CodeSnippets from '../_components/CodeSnippets'
-import AddTags from '../_components/AddTags'
-import type { SolutionForm } from '../_components/types'
-import { createSolutionAction } from '@/app/actions/solution'
+import BasicInfo from '../../_components/BasicInfo'
+import ProblemsAndSolutions from '../../_components/ProblemsAndSolutions'
+import CodeSnippets from '../../_components/CodeSnippets'
+import AddTags from '../../_components/AddTags'
+import type { SolutionForm } from '../../_components/types'
+import { updateSolutionAction } from '@/app/actions/solution'
+import type { SolutionWithFavorite } from '@/db/queries'
 
-const defaultValues: SolutionForm = {
-  title: '',
-  description: '',
-  status: 'open',
-  difficulty: 'easy',
-  problemDescription: '',
-  solutionSteps: '',
-  codeSnippets: [],
-  tags: [],
-}
-
-export default function AddNewSolutionPage() {
+export default function EditSolutionForm({
+  solution,
+}: {
+  solution: SolutionWithFavorite
+}) {
   const router = useRouter()
-  const methods = useForm<SolutionForm>({ defaultValues })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  const defaultValues: SolutionForm = {
+    title: solution.title,
+    description: solution.description,
+    status: solution.status,
+    difficulty: solution.difficulty,
+    problemDescription: solution.problemDescription,
+    solutionSteps: solution.solutionSteps,
+    codeSnippets: solution.codeSnippets,
+    tags: solution.tags,
+  }
+
+  const methods = useForm<SolutionForm>({ defaultValues })
 
   const onSubmit = async (data: SolutionForm) => {
     setIsSubmitting(true)
     setError(null)
 
-    const result = await createSolutionAction(data)
+    const result = await updateSolutionAction(solution.id, data)
 
     if (result.error) {
       setError(result.error)
       setIsSubmitting(false)
-    } else if (result.data?.id) {
-      router.push(`/solution/${result.data.id}`)
     } else {
-      router.push('/solution')
+      router.push(`/solution/${solution.id}`)
     }
   }
 
   return (
     <div className="p-4 lg:p-6">
       <div className="mb-4 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 p-2 rounded-lg inline-block">
-        <Link href="/solution">
+        <Link href={`/solution/${solution.id}`}>
           <ArrowLeft className="inline-block mr-2" />
-          <p className="inline font-semibold text-base lg:text-lg">Back to Solutions</p>
+          <p className="inline font-semibold text-base lg:text-lg">
+            Back to Solution
+          </p>
         </Link>
       </div>
       <div>
-        <h1 className="text-xl lg:text-2xl font-bold mb-1">Add New Solution</h1>
+        <h1 className="text-xl lg:text-2xl font-bold mb-1">Edit Solution</h1>
         <p className="text-sm lg:text-base text-gray-600 dark:text-gray-400">
-          Document a new problem and its solution
+          Update solution details, code snippets, or tags
         </p>
       </div>
 
@@ -76,7 +82,7 @@ export default function AddNewSolutionPage() {
             <div className="flex justify-between">
               <button
                 type="button"
-                onClick={() => router.push('/solution')}
+                onClick={() => router.push(`/solution/${solution.id}`)}
                 disabled={isSubmitting}
                 className="border border-gray-500 px-3 lg:px-4 py-2 text-sm lg:text-base rounded-lg hover:bg-slate-100 dark:hover:bg-slate-500 cursor-pointer disabled:opacity-50"
               >
@@ -90,13 +96,10 @@ export default function AddNewSolutionPage() {
                 {isSubmitting ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin" />
-                    <span>Publishing...</span>
+                    <span>Saving...</span>
                   </>
                 ) : (
-                  <>
-                    <span className="hidden sm:inline">Publish Solution</span>
-                    <span className="sm:hidden">Publish</span>
-                  </>
+                  <span>Save Changes</span>
                 )}
               </button>
             </div>

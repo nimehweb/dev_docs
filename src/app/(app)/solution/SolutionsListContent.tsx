@@ -1,28 +1,25 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useTransition } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { Search, X, ExternalLink, Heart, Tag, Calendar } from 'lucide-react'
+import type { SolutionWithFavorite } from '@/db/queries'
+import { toggleFavoriteAction } from '@/app/actions/solution'
 
-type Solution = {
-  id: string
-  title: string
-  description: string
-  status: string
-  difficulty: string
-  tags: string[]
-  created_at: string
-  problem_description?: string
-  solution_steps?: string
-}
-
-const placeholderSolutions: Solution[] = []
-
-export default function SolutionsListContent() {
+export default function SolutionsListContent({
+  initialSolutions,
+}: {
+  initialSolutions: SolutionWithFavorite[]
+}) {
   const searchParams = useSearchParams()
-  const solutions = placeholderSolutions
-  const favorites: string[] = []
+  const [solutions, setSolutions] = useState(initialSolutions)
+  const [, startTransition] = useTransition()
+
+  // Sync state if initialSolutions change from server revalidation
+  useEffect(() => {
+    setSolutions(initialSolutions)
+  }, [initialSolutions])
 
   const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '')
   const [selectedTag, setSelectedTag] = useState(searchParams.get('tag') || '')
@@ -40,14 +37,35 @@ export default function SolutionsListContent() {
     window.history.replaceState(null, '', `${window.location.pathname}?${params.toString()}`)
   }, [searchTerm, selectedTag, statusFilter, difficultyFilter, sortBy])
 
-  const allTags = [...new Set(solutions.flatMap((solution) => solution.tags))].sort()
+  const handleToggleFavorite = (solutionId: string) => {
+    setSolutions((prev) =>
+      prev.map((s) =>
+        s.id === solutionId ? { ...s, isFavorited: !s.isFavorited } : s,
+      ),
+    )
+    startTransition(async () => {
+      const res = await toggleFavoriteAction(solutionId)
+      if (res.error) {
+        // Revert on error
+        setSolutions((prev) =>
+          prev.map((s) =>
+            s.id === solutionId ? { ...s, isFavorited: !s.isFavorited } : s,
+          ),
+        )
+      }
+    })
+  }
+
+  const allTags = [
+    ...new Set(solutions.flatMap((solution) => solution.tags)),
+  ].sort()
 
   const filteredSolutions = solutions.filter((solution) => {
     const matchesSearch =
       solution.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       solution.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (solution.problem_description ?? '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (solution.solution_steps ?? '').toLowerCase().includes(searchTerm.toLowerCase())
+      (solution.problemDescription ?? '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (solution.solutionSteps ?? '').toLowerCase().includes(searchTerm.toLowerCase())
 
     const matchesTag = !selectedTag || solution.tags.includes(selectedTag)
     const matchesStatus = statusFilter === 'all' || solution.status === statusFilter
@@ -59,15 +77,15 @@ export default function SolutionsListContent() {
   filteredSolutions.sort((a, b) => {
     switch (sortBy) {
       case 'newest':
-        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       case 'oldest':
-        return new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
       case 'title':
         return a.title.localeCompare(b.title)
       case 'status':
         return a.status.localeCompare(b.status)
       default:
-        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     }
   })
 
@@ -92,7 +110,7 @@ export default function SolutionsListContent() {
           </p>
         </div>
         <Link
-          href="/solution/add-new"
+          href="/solution/new"
           className="px-3 lg:px-4 py-2 text-sm lg:text-base text-white bg-blue-600 hover:bg-blue-700 cursor-pointer text-center rounded-lg transition-colors"
         >
           <span className="hidden sm:inline">+ Add New Solution</span>
@@ -178,7 +196,7 @@ export default function SolutionsListContent() {
             {hasActiveFilters && (
               <button
                 onClick={clearFilters}
-                className="w-full px-2 lg:px-3 py-2 text-sm lg:text-base text-gray-600 dark:text-gray-400 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors flex items-center justify-center"
+                className="w-full px-2 lg:px-3 py-2 text-sm lg:text-base text-gray-600 dark:text-gray-400 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors flex items-center justify-center cursor-pointer"
               >
                 <X className="h-4 w-4 mr-1" />
                 Clear
@@ -242,7 +260,7 @@ export default function SolutionsListContent() {
                   Start documenting your problem-solving journey by creating your first solution.
                 </p>
                 <Link
-                  href="/solution/add-new"
+                  href="/solution/new"
                   className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                 >
                   Create First Solution
@@ -278,13 +296,15 @@ export default function SolutionsListContent() {
                   </h2>
                   <div className="flex gap-1 lg:gap-2 items-center flex-shrink-0">
                     <button
+                      type="button"
+                      onClick={() => handleToggleFavorite(solution.id)}
                       className={`p-1 lg:p-2 border rounded-lg flex items-center justify-center cursor-pointer transition-colors ${
-                        favorites.includes(solution.id)
+                        solution.isFavorited
                           ? 'border-red-500 bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-900 dark:text-red-300 dark:hover:bg-red-800'
                           : 'border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-slate-800'
                       }`}
                     >
-                      <Heart className={`size-3 lg:size-4 ${favorites.includes(solution.id) ? 'fill-current' : ''}`} />
+                      <Heart className={`size-3 lg:size-4 ${solution.isFavorited ? 'fill-current' : ''}`} />
                     </button>
                     <span
                       className={`py-1 px-2 lg:px-3 rounded-lg text-xs lg:text-sm font-medium ${
@@ -323,7 +343,7 @@ export default function SolutionsListContent() {
 
                 <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
                   <Calendar className="size-3 lg:size-4 mr-2" />
-                  <span>Created: {new Date(solution.created_at).toLocaleDateString()}</span>
+                  <span>Created: {new Date(solution.createdAt).toLocaleDateString()}</span>
                 </div>
               </div>
             ))}

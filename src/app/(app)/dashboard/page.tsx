@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
 import {
   Plus,
   FileText,
@@ -11,44 +12,40 @@ import {
   BarChart3,
   Activity,
 } from 'lucide-react'
+import { getSessionUser } from '@/lib/auth'
+import { getUserSolutions } from '@/db/queries'
 
-type Solution = {
-  id: string
-  title: string
-  description: string
-  status: string
-  difficulty: string
-  tags: string[]
-  created_at: string
-}
+export default async function DashboardPage() {
+  const userId = await getSessionUser()
+  if (!userId) {
+    redirect('/login')
+  }
 
-const placeholderSolutions: Solution[] = []
+  const solutions = await getUserSolutions(userId)
 
-export default function DashboardPage() {
-  const totalSolutions = placeholderSolutions.length
-  const resolvedSolutions = placeholderSolutions.filter((s) => s.status === 'resolved').length
-  const openSolutions = placeholderSolutions.filter((s) => s.status === 'open').length
+  const totalSolutions = solutions.length
+  const resolvedSolutions = solutions.filter((s) => s.status === 'resolved').length
+  const openSolutions = solutions.filter((s) => s.status === 'open').length
 
-  const recentSolutions = placeholderSolutions.slice(0, 5)
+  const recentSolutions = solutions.slice(0, 5)
 
-  const tagCounts = placeholderSolutions.reduce(
-    (acc: Record<string, number>, solution) => {
-      solution.tags.forEach((tag) => {
-        acc[tag] = (acc[tag] || 0) + 1
-      })
-      return acc
-    },
-    {},
-  )
+  const tagCounts = solutions.reduce<Record<string, number>>((acc, solution) => {
+    solution.tags.forEach((tag) => {
+      acc[tag] = (acc[tag] || 0) + 1
+    })
+    return acc
+  }, {})
 
-  const popularTags = Object.entries(tagCounts).sort(([, a], [, b]) => b - a).slice(0, 8)
+  const popularTags = Object.entries(tagCounts)
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, 8)
 
   const quickActions = [
     {
       title: 'Add New Solution',
       description: 'Document a new problem and solution',
       icon: <Plus className="h-6 w-6" />,
-      link: '/solution/add-new',
+      link: '/solution/new',
       color: 'bg-blue-500 hover:bg-blue-600',
     },
     {
@@ -172,7 +169,7 @@ export default function DashboardPage() {
               <div className="text-center py-8">
                 <FileText className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
                 <p className="text-gray-500 dark:text-gray-400">No solutions yet</p>
-                <Link href="/solution/add-new" className="text-blue-600 dark:text-blue-400 hover:underline text-sm">
+                <Link href="/solution/new" className="text-blue-600 dark:text-blue-400 hover:underline text-sm">
                   Create your first solution
                 </Link>
               </div>
@@ -189,7 +186,7 @@ export default function DashboardPage() {
                       </h3>
                       <div className="flex items-center mt-1 text-sm text-gray-500 dark:text-gray-400">
                         <Calendar className="h-4 w-4 mr-1" />
-                        {new Date(solution.created_at).toLocaleDateString()}
+                        {new Date(solution.createdAt).toLocaleDateString()}
                       </div>
                     </div>
                     <Link href={`/solution/${solution.id}`} className="ml-4 p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
@@ -219,10 +216,13 @@ export default function DashboardPage() {
               <div className="space-y-3">
                 {popularTags.map(([tag, count]) => (
                   <div key={tag} className="flex items-center justify-between flex-wrap gap-2">
-                    <span className="inline-flex items-center px-2 lg:px-3 py-1 rounded-full text-xs lg:text-sm bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300">
+                    <Link
+                      href={`/solution?tag=${encodeURIComponent(tag)}`}
+                      className="inline-flex items-center px-2 lg:px-3 py-1 rounded-full text-xs lg:text-sm bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors"
+                    >
                       <Tag className="h-3 w-3 mr-1" />
                       {tag}
-                    </span>
+                    </Link>
                     <span className="text-xs lg:text-sm font-medium text-gray-500 dark:text-gray-400">
                       {count} solution{count !== 1 ? 's' : ''}
                     </span>

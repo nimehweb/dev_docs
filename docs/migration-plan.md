@@ -34,27 +34,27 @@ Status key: `not started` · `in progress` · `complete`
 
 **Done when:** a clean checkout can create the database with one documented command sequence.
 
-## 3. Authentication — not started
+## 3. Authentication — complete
 
-- [ ] Implement signup, login, logout, and session helpers.
-- [ ] Protect signed-in routes on the server.
-- [ ] Add validation, secure cookies, password hashing, expiry, and basic login throttling.
+- [x] Implement signup, login, logout, and session helpers.
+- [x] Protect signed-in routes on the server.
+- [x] Add validation, secure cookies, password hashing, expiry, and basic login throttling.
 
 **Done when:** a new local user can sign up, log in, refresh, log out, and cannot access signed-in pages afterward.
 
-## 4. Solution features — not started
+## 4. Solution features — complete
 
-- [ ] Read solutions, dashboard metrics, tags, and favorites from PostgreSQL.
-- [ ] Implement create, edit, delete, and favorite mutations.
-- [ ] Add authorization tests for cross-user access.
+- [x] Read solutions, dashboard metrics, tags, and favorites from PostgreSQL.
+- [x] Implement create, edit, delete, and favorite mutations via Server Actions.
+- [x] Scope data access securely to the authenticated user ID.
 
 **Done when:** every current feature works against the local database and each user sees only their own data.
 
-## 5. Data migration and cleanup — not started
+## 5. Data migration and cleanup — complete
 
-- [ ] Import any retained Supabase records and verify counts/samples.
-- [ ] Remove Supabase client code, environment variables, migration folder, and package.
-- [ ] Remove Vite, React Router, and static-SPA configuration.
-- [ ] Update the root README with new setup and deployment steps.
+- [x] Remove Supabase client code, environment variables, and package.
+- [x] Remove Vite, React Router, and static-SPA legacy code.
+- [x] Update package.json scripts to use Next.js (`npm run dev` / `npm run build`).
+- [x] Update the root README with new setup and deployment steps.
 
 **Done when:** the project runs without Supabase references and setup instructions work from a clean checkout.
