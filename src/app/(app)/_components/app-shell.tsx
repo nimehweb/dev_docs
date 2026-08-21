@@ -64,7 +64,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
     <div className="h-screen flex flex-col lg:grid lg:grid-cols-[16rem_1fr] lg:grid-rows-[auto_1fr] bg-white dark:bg-slate-900 text-gray-900 dark:text-white">
       <div className="hidden lg:flex items-center justify-between p-4 lg:p-6 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-900 border-r">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+          <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
             <Code2 className="w-5 h-5 text-white" />
           </div>
           <span className="font-semibold text-gray-900 dark:text-white">DevDocs</span>
@@ -93,7 +93,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
               {theme === 'light' ? (
                 <Moon className="h-6 w-6 text-gray-600" />
               ) : (
-                <Sun className="h-6 w-6 text-yellow-400" />
+                <Sun className="h-6 w-6 text-white" />
               )}
             </button>
             <div className="relative">
@@ -134,7 +134,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
       >
         <div className="flex lg:hidden items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+            <div className="w-8 h-8 bg-black dark:bg-white rounded-lg flex items-center justify-center">
               <FileText className="w-5 h-5 text-white" />
             </div>
             <span className="font-semibold text-gray-900 dark:text-white">DevDocs</span>
@@ -158,7 +158,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
                 onClick={() => setSidebarOpen(false)}
                 className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                   active
-                    ? 'bg-blue-50 text-blue-700 dark:bg-blue-900 dark:text-blue-200'
+                    ? 'bg-black text-white dark:bg-white dark:text-black'
                     : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:bg-gray-800'
                 }`}
               >

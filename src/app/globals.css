@@ -3,3 +3,27 @@
 @plugin "@tailwindcss/typography";
 
 @custom-variant dark (&:where(.dark, .dark *));
+
+/* The product uses a single neutral palette. These rules also keep legacy
+   status and accent utility classes monochrome while pages are refined. */
+[class*="bg-blue-"], [class*="bg-green-"], [class*="bg-purple-"], [class*="bg-orange-"],
+[class*="bg-red-"], [class*="bg-yellow-"], [class*="bg-sky-"], [class*="bg-amber-"] {
+  background-color: #171717 !important;
+}
+
+[class*="bg-blue-50"], [class*="bg-blue-100"], [class*="bg-green-100"],
+[class*="bg-purple-100"], [class*="bg-orange-100"], [class*="bg-red-50"],
+[class*="bg-red-100"], [class*="bg-yellow-100"] {
+  background-color: #f5f5f5 !important;
+}
+
+[class*="text-blue-"], [class*="text-green-"], [class*="text-purple-"],
+[class*="text-orange-"], [class*="text-red-"], [class*="text-yellow-"],
+[class*="text-sky-"], [class*="text-amber-"] {
+  color: #171717 !important;
+}
+
+[class*="border-blue-"], [class*="border-green-"], [class*="border-purple-"],
+[class*="border-orange-"], [class*="border-red-"], [class*="border-yellow-"] {
+  border-color: #a3a3a3 !important;
+}

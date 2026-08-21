@@ -8,6 +8,8 @@ import bcrypt from "bcryptjs";
 import { db } from "../db";
 import { sessions } from "../db/schema";
 
+import { withDbRetry } from "./retry";
+
 const SESSION_COOKIE = "devdocs_session";
 const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
 
@@ -31,7 +33,9 @@ export async function createSession(userId: string): Promise<void> {
   const tokenHash = hashToken(token);
   const expiresAt = new Date(Date.now() + SESSION_TTL_MS);
 
-  await db.insert(sessions).values({ userId, tokenHash, expiresAt });
+  await withDbRetry(() =>
+    db.insert(sessions).values({ userId, tokenHash, expiresAt }),
+  );
 
   const cookieStore = await cookies();
   cookieStore.set(SESSION_COOKIE, token, {
@@ -48,22 +52,34 @@ export async function getSessionUser(): Promise<string | null> {
   const token = cookieStore.get(SESSION_COOKIE)?.value;
   if (!token) return null;
 
-  const [session] = await db
-    .select({ userId: sessions.userId })
-    .from(sessions)
-    .where(
-      and(eq(sessions.tokenHash, hashToken(token)), gt(sessions.expiresAt, new Date())),
-    )
-    .limit(1);
+  try {
+    const [session] = await withDbRetry(() =>
+      db
+        .select({ userId: sessions.userId })
+        .from(sessions)
+        .where(
+          and(
+            eq(sessions.tokenHash, hashToken(token)),
+            gt(sessions.expiresAt, new Date()),
+          ),
+        )
+        .limit(1),
+    );
 
-  return session?.userId ?? null;
+    return session?.userId ?? null;
+  } catch (error) {
+    console.error("Session lookup network error:", error);
+    return null;
+  }
 }
 
 export async function deleteSession(): Promise<void> {
   const cookieStore = await cookies();
   const token = cookieStore.get(SESSION_COOKIE)?.value;
   if (token) {
-    await db.delete(sessions).where(eq(sessions.tokenHash, hashToken(token)));
+    await withDbRetry(() =>
+      db.delete(sessions).where(eq(sessions.tokenHash, hashToken(token))),
+    ).catch(() => {});
   }
   cookieStore.delete(SESSION_COOKIE);
 }

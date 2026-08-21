@@ -48,6 +48,8 @@ function clearFailures(key: string): void {
   failedLogins.delete(key);
 }
 
+import { withDbRetry } from "../../lib/retry";
+
 type ActionState = { error?: string };
 
 function zodError(e: z.ZodError): string {
@@ -65,22 +67,32 @@ export async function signupAction(
 
   const { name, email, password } = parsed.data;
 
-  const existing = await db
-    .select({ id: users.id })
-    .from(users)
-    .where(eq(users.email, email))
-    .limit(1);
-  if (existing.length > 0) {
-    return { error: "An account with this email already exists" };
+  try {
+    const existing = await withDbRetry(() =>
+      db
+        .select({ id: users.id })
+        .from(users)
+        .where(eq(users.email, email))
+        .limit(1),
+    );
+    if (existing.length > 0) {
+      return { error: "An account with this email already exists" };
+    }
+
+    const passwordHash = await hashPassword(password);
+    const [created] = await withDbRetry(() =>
+      db
+        .insert(users)
+        .values({ name, email, passwordHash })
+        .returning({ id: users.id }),
+    );
+
+    await withDbRetry(() => createSession(created.id));
+  } catch (error) {
+    console.error("Signup database error:", error);
+    return { error: "Temporary connection error. Please click Sign Up again." };
   }
 
-  const passwordHash = await hashPassword(password);
-  const [created] = await db
-    .insert(users)
-    .values({ name, email, passwordHash })
-    .returning({ id: users.id });
-
-  await createSession(created.id);
   redirect("/dashboard");
 }
 
@@ -102,11 +114,21 @@ export async function loginAction(
     };
   }
 
-  const [user] = await db
-    .select({ id: users.id, passwordHash: users.passwordHash })
-    .from(users)
-    .where(eq(users.email, email))
-    .limit(1);
+  let user: { id: string; passwordHash: string } | undefined;
+
+  try {
+    const rows = await withDbRetry(() =>
+      db
+        .select({ id: users.id, passwordHash: users.passwordHash })
+        .from(users)
+        .where(eq(users.email, email))
+        .limit(1),
+    );
+    user = rows[0];
+  } catch (error) {
+    console.error("Login database error:", error);
+    return { error: "Temporary connection error. Please click Sign In again." };
+  }
 
   if (!user || !(await verifyPassword(password, user.passwordHash))) {
     recordFailure(throttleKey);
@@ -114,7 +136,13 @@ export async function loginAction(
   }
 
   clearFailures(throttleKey);
-  await createSession(user.id);
+  try {
+    await withDbRetry(() => createSession(user!.id));
+  } catch (error) {
+    console.error("Session creation error:", error);
+    return { error: "Temporary session error. Please try again." };
+  }
+
   redirect("/dashboard");
 }
 
@@ -122,3 +150,4 @@ export async function logoutAction(): Promise<void> {
   await deleteSession();
   redirect("/login");
 }
+
