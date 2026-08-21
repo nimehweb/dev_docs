@@ -23,11 +23,12 @@ import { logoutAction } from '../../actions/auth'
 
 const navigationItems = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { name: 'All Solutions', href: '/solution', icon: FileText },
+  { name: 'Library', href: '/solution', icon: FileText },
   { name: 'Tags', href: '/tags', icon: Tag },
   { name: 'Favorites', href: '/favorites', icon: Heart },
   { name: 'Profile', href: '/profile', icon: User },
 ]
+
 
 const isActive = (pathname: string, href: string) =>
   pathname.startsWith(href)

@@ -1,108 +1,30 @@
-'use client'
-
-import { useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { useForm, FormProvider } from 'react-hook-form'
-import { ArrowLeft, Loader2 } from 'lucide-react'
-import BasicInfo from '../_components/BasicInfo'
-import ProblemsAndSolutions from '../_components/ProblemsAndSolutions'
-import CodeSnippets from '../_components/CodeSnippets'
-import AddTags from '../_components/AddTags'
-import type { SolutionForm } from '../_components/types'
-import { createSolutionAction } from '@/app/actions/solution'
+import { ArrowLeft } from 'lucide-react'
+import BlockEditor from '@/components/editor/BlockEditor'
 
-const defaultValues: SolutionForm = {
-  title: '',
-  description: '',
-  status: 'open',
-  difficulty: 'easy',
-  problemDescription: '',
-  solutionSteps: '',
-  codeSnippets: [],
-  tags: [],
-}
-
-export default function AddNewSolutionPage() {
-  const router = useRouter()
-  const methods = useForm<SolutionForm>({ defaultValues })
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-
-  const onSubmit = async (data: SolutionForm) => {
-    setIsSubmitting(true)
-    setError(null)
-
-    const result = await createSolutionAction(data)
-
-    if (result.error) {
-      setError(result.error)
-      setIsSubmitting(false)
-    } else if (result.data?.id) {
-      router.push(`/solution/${result.data.id}`)
-    } else {
-      router.push('/solution')
-    }
-  }
-
+export default function AddNewNotePage() {
   return (
-    <div className="p-4 lg:p-6">
-      <div className="mb-4 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 p-2 rounded-lg inline-block">
-        <Link href="/solution">
-          <ArrowLeft className="inline-block mr-2" />
-          <p className="inline font-semibold text-base lg:text-lg">Back to Solutions</p>
+    <div className="p-4 lg:p-6 max-w-5xl mx-auto space-y-6">
+      <div className="flex items-center gap-2 text-sm">
+        <Link
+          href="/solution"
+          className="inline-flex items-center gap-1.5 text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          <span>Back to Library</span>
         </Link>
       </div>
+
       <div>
-        <h1 className="text-xl lg:text-2xl font-bold mb-1">Add New Solution</h1>
-        <p className="text-sm lg:text-base text-gray-600 dark:text-gray-400">
-          Document a new problem and its solution
+        <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white">
+          Write a Note
+        </h1>
+        <p className="text-sm text-gray-600 dark:text-gray-400">
+          Compose a modular technical note or article for your knowledge base
         </p>
       </div>
 
-      {error && (
-        <div className="mt-4 p-3 bg-red-100 dark:bg-red-900/40 border border-red-400 dark:border-red-600 text-red-700 dark:text-red-300 rounded-lg text-sm">
-          {error}
-        </div>
-      )}
-
-      <FormProvider {...methods}>
-        <form onSubmit={methods.handleSubmit(onSubmit)}>
-          <BasicInfo />
-          <ProblemsAndSolutions />
-          <CodeSnippets />
-          <AddTags />
-          <section className="mt-8">
-            <div className="flex justify-between">
-              <button
-                type="button"
-                onClick={() => router.push('/solution')}
-                disabled={isSubmitting}
-                className="border border-gray-500 px-3 lg:px-4 py-2 text-sm lg:text-base rounded-lg hover:bg-slate-100 dark:hover:bg-slate-500 cursor-pointer disabled:opacity-50"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="border border-gray-500 px-3 lg:px-4 py-2 text-sm lg:text-base rounded-lg hover:bg-slate-100 dark:hover:bg-slate-500 cursor-pointer flex items-center gap-2 disabled:opacity-50"
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    <span>Publishing...</span>
-                  </>
-                ) : (
-                  <>
-                    <span className="hidden sm:inline">Publish Solution</span>
-                    <span className="sm:hidden">Publish</span>
-                  </>
-                )}
-              </button>
-            </div>
-          </section>
-        </form>
-      </FormProvider>
+      <BlockEditor />
     </div>
   )
 }

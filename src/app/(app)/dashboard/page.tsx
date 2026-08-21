@@ -1,19 +1,18 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import {
-  Plus,
-  FileText,
+  Activity,
+  Calendar,
   CheckCircle,
   Clock,
-  TrendingUp,
-  Tag,
-  Calendar,
   ExternalLink,
-  BarChart3,
-  Activity,
+  FileText,
+  Plus,
+  Star,
+  Tag,
 } from 'lucide-react'
 import { getSessionUser } from '@/lib/auth'
-import { getUserSolutions } from '@/db/queries'
+import { getUserFavoriteNotes, getUserNotes, getUserSolutions } from '@/db/queries'
 
 export default async function DashboardPage() {
   const userId = await getSessionUser()
@@ -21,17 +20,25 @@ export default async function DashboardPage() {
     redirect('/login')
   }
 
-  const solutions = await getUserSolutions(userId)
+  const notes = await getUserNotes(userId)
+  const legacySolutions = await getUserSolutions(userId)
+  const favoriteNotes = await getUserFavoriteNotes(userId)
 
-  const totalSolutions = solutions.length
-  const resolvedSolutions = solutions.filter((s) => s.status === 'resolved').length
-  const openSolutions = solutions.filter((s) => s.status === 'open').length
+  const totalNotes = notes.length + legacySolutions.length
+  const publishedNotes = notes.filter((n) => n.status === 'published').length + legacySolutions.length
+  const draftNotes = notes.filter((n) => n.status === 'draft').length
+  const starredCount = favoriteNotes.length + legacySolutions.filter((s) => s.isFavorited).length
 
-  const recentSolutions = solutions.slice(0, 5)
+  const recentItems = [
+    ...notes.map((n) => ({ id: n.id, title: n.title, status: n.status, createdAt: n.createdAt, tags: n.tags })),
+    ...legacySolutions.map((s) => ({ id: s.id, title: s.title, status: 'published' as const, createdAt: s.createdAt, tags: s.tags })),
+  ]
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .slice(0, 5)
 
-  const tagCounts = solutions.reduce<Record<string, number>>((acc, solution) => {
-    solution.tags.forEach((tag) => {
-      acc[tag] = (acc[tag] || 0) + 1
+  const tagCounts = [...notes, ...legacySolutions].reduce<Record<string, number>>((acc, item) => {
+    item.tags.forEach((t) => {
+      acc[t] = (acc[t] || 0) + 1
     })
     return acc
   }, {})
@@ -42,195 +49,202 @@ export default async function DashboardPage() {
 
   const quickActions = [
     {
-      title: 'Add New Solution',
-      description: 'Document a new problem and solution',
-      icon: <Plus className="h-6 w-6" />,
+      title: 'Write a Note',
+      description: 'Compose a new developer note',
+      icon: <Plus className="h-5 w-5" />,
       link: '/solution/new',
-      color: 'bg-blue-500 hover:bg-blue-600',
     },
     {
-      title: 'Browse Solutions',
-      description: 'View all documented solutions',
-      icon: <FileText className="h-6 w-6" />,
+      title: 'Browse Library',
+      description: 'View all developer notes',
+      icon: <FileText className="h-5 w-5" />,
       link: '/solution',
-      color: 'bg-green-500 hover:bg-green-600',
     },
     {
-      title: 'Manage Tags',
-      description: 'Organize your solution categories',
-      icon: <Tag className="h-6 w-6" />,
+      title: 'Manage Topics',
+      description: 'Filter notes by tag',
+      icon: <Tag className="h-5 w-5" />,
       link: '/tags',
-      color: 'bg-purple-500 hover:bg-purple-600',
     },
     {
-      title: 'View Favorites',
-      description: 'Access your starred solutions',
-      icon: <TrendingUp className="h-6 w-6" />,
+      title: 'Starred Notes',
+      description: 'Quick access to favorites',
+      icon: <Star className="h-5 w-5" />,
       link: '/favorites',
-      color: 'bg-orange-500 hover:bg-orange-600',
     },
   ]
 
   return (
-    <div className="p-4 lg:p-6 bg-gray-50 dark:bg-slate-800 min-h-full">
-      <div className="mb-8">
-        <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white mb-2">Dashboard</h1>
-        <p className="text-gray-600 dark:text-gray-300">
-          Welcome back! Here&apos;s an overview of your developer documentation.
+    <div className="p-4 lg:p-8 max-w-6xl mx-auto space-y-8">
+      <div>
+        <h1 className="text-2xl lg:text-3xl font-extrabold text-zinc-900 dark:text-white">
+          Dashboard
+        </h1>
+        <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">
+          Overview of your personal developer library & knowledge base
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div className="bg-white dark:bg-slate-900 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Solutions</p>
-              <p className="text-3xl font-bold text-gray-900 dark:text-white">{totalSolutions}</p>
-            </div>
-            <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-full">
-              <FileText className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-            </div>
+      {/* Metric Cards - Strict Monochrome */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-white dark:bg-[#121215] p-5 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-sm flex items-center justify-between">
+          <div>
+            <p className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+              Total Notes
+            </p>
+            <p className="text-2xl font-extrabold text-zinc-900 dark:text-white mt-1">
+              {totalNotes}
+            </p>
+          </div>
+          <div className="p-3 bg-zinc-100 dark:bg-zinc-800 rounded-xl text-zinc-900 dark:text-zinc-100">
+            <FileText className="h-5 w-5" />
           </div>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Resolved</p>
-              <p className="text-3xl font-bold text-green-600 dark:text-green-400">{resolvedSolutions}</p>
-            </div>
-            <div className="p-3 bg-green-100 dark:bg-green-900 rounded-full">
-              <CheckCircle className="h-6 w-6 text-green-600 dark:text-green-400" />
-            </div>
+        <div className="bg-white dark:bg-[#121215] p-5 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-sm flex items-center justify-between">
+          <div>
+            <p className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+              Published
+            </p>
+            <p className="text-2xl font-extrabold text-zinc-900 dark:text-white mt-1">
+              {publishedNotes}
+            </p>
+          </div>
+          <div className="p-3 bg-zinc-100 dark:bg-zinc-800 rounded-xl text-zinc-900 dark:text-zinc-100">
+            <CheckCircle className="h-5 w-5" />
           </div>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Open Issues</p>
-              <p className="text-3xl font-bold text-orange-600 dark:text-orange-400">{openSolutions}</p>
-            </div>
-            <div className="p-3 bg-orange-100 dark:bg-orange-900 rounded-full">
-              <Clock className="h-6 w-6 text-orange-600 dark:text-orange-400" />
-            </div>
+        <div className="bg-white dark:bg-[#121215] p-5 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-sm flex items-center justify-between">
+          <div>
+            <p className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+              Drafts
+            </p>
+            <p className="text-2xl font-extrabold text-zinc-900 dark:text-white mt-1">
+              {draftNotes}
+            </p>
+          </div>
+          <div className="p-3 bg-zinc-100 dark:bg-zinc-800 rounded-xl text-zinc-900 dark:text-zinc-100">
+            <Clock className="h-5 w-5" />
           </div>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Success Rate</p>
-              <p className="text-3xl font-bold text-purple-600 dark:text-purple-400">
-                {totalSolutions > 0 ? Math.round((resolvedSolutions / totalSolutions) * 100) : 0}%
-              </p>
-            </div>
-            <div className="p-3 bg-purple-100 dark:bg-purple-900 rounded-full">
-              <BarChart3 className="h-6 w-6 text-purple-600 dark:text-purple-400" />
-            </div>
+        <div className="bg-white dark:bg-[#121215] p-5 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-sm flex items-center justify-between">
+          <div>
+            <p className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+              Starred
+            </p>
+            <p className="text-2xl font-extrabold text-zinc-900 dark:text-white mt-1">
+              {starredCount}
+            </p>
+          </div>
+          <div className="p-3 bg-zinc-100 dark:bg-zinc-800 rounded-xl text-zinc-900 dark:text-zinc-100">
+            <Star className="h-5 w-5" />
           </div>
         </div>
       </div>
 
-      <div className="mb-8">
-        <h2 className="text-lg lg:text-xl font-semibold text-gray-900 dark:text-white mb-4">Quick Actions</h2>
+      {/* Quick Actions - Strict Monochrome */}
+      <div className="space-y-3">
+        <h2 className="text-base font-bold text-zinc-900 dark:text-white">Quick Actions</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {quickActions.map((action, index) => (
+          {quickActions.map((act) => (
             <Link
-              key={index}
-              href={action.link}
-              className={`${action.color} text-white p-4 lg:p-6 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 transform hover:scale-105`}
+              key={act.title}
+              href={act.link}
+              className="bg-white dark:bg-[#121215] hover:bg-zinc-50 dark:hover:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-white p-4 rounded-xl shadow-sm hover:shadow-md transition-all flex flex-col justify-between space-y-3"
             >
-              <div className="flex items-center mb-2 lg:mb-3">
-                {action.icon}
-                <h3 className="ml-3 font-semibold text-sm lg:text-base">{action.title}</h3>
+              <div className="flex items-center justify-between">
+                <span className="font-bold text-sm">{act.title}</span>
+                <div className="p-1.5 bg-zinc-100 dark:bg-zinc-800 rounded-lg">
+                  {act.icon}
+                </div>
               </div>
-              <p className="text-xs lg:text-sm opacity-90">{action.description}</p>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">{act.description}</p>
             </Link>
           ))}
         </div>
       </div>
 
+      {/* Recent Notes & Popular Topics */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div className="bg-white dark:bg-slate-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-          <div className="p-4 lg:p-6 border-b border-gray-200 dark:border-gray-700">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg lg:text-xl font-semibold text-gray-900 dark:text-white flex items-center">
-                <Activity className="h-5 w-5 mr-2" />
-                Recent Solutions
-              </h2>
-              <Link href="/solution" className="text-blue-600 dark:text-blue-400 hover:underline text-sm">
-                View all
-              </Link>
-            </div>
+        <div className="bg-white dark:bg-[#121215] rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-sm p-5 space-y-4">
+          <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800 pb-3">
+            <h2 className="text-base font-bold text-zinc-900 dark:text-white flex items-center gap-2">
+              <Activity className="w-4 h-4 text-zinc-500" />
+              Recent Notes
+            </h2>
+            <Link href="/solution" className="text-xs font-bold text-zinc-900 dark:text-white hover:underline">
+              View Library
+            </Link>
           </div>
-          <div className="p-4 lg:p-6">
-            {recentSolutions.length === 0 ? (
-              <div className="text-center py-8">
-                <FileText className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
-                <p className="text-gray-500 dark:text-gray-400">No solutions yet</p>
-                <Link href="/solution/new" className="text-blue-600 dark:text-blue-400 hover:underline text-sm">
-                  Create your first solution
-                </Link>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {recentSolutions.map((solution) => (
-                  <div
-                    key={solution.id}
-                    className="flex items-center justify-between p-2 lg:p-3 hover:bg-gray-50 dark:hover:bg-slate-800 rounded-lg transition-colors"
-                  >
-                    <div className="flex-1">
-                      <h3 className="font-medium text-sm lg:text-base text-gray-900 dark:text-white text-wrap">
-                        {solution.title}
-                      </h3>
-                      <div className="flex items-center mt-1 text-sm text-gray-500 dark:text-gray-400">
-                        <Calendar className="h-4 w-4 mr-1" />
-                        {new Date(solution.createdAt).toLocaleDateString()}
-                      </div>
-                    </div>
-                    <Link href={`/solution/${solution.id}`} className="ml-4 p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-                      <ExternalLink className="h-4 w-4" />
+
+          {recentItems.length === 0 ? (
+            <p className="text-xs text-zinc-500 text-center py-6">No notes composed yet.</p>
+          ) : (
+            <div className="space-y-3">
+              {recentItems.map((item) => (
+                <div
+                  key={item.id}
+                  className="flex items-center justify-between p-3 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors"
+                >
+                  <div className="space-y-1">
+                    <Link
+                      href={`/solution/${item.id}`}
+                      className="text-sm font-semibold text-zinc-900 dark:text-white hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors line-clamp-1"
+                    >
+                      {item.title}
                     </Link>
+                    <div className="flex items-center gap-2 text-[11px] text-zinc-500 dark:text-zinc-400">
+                      <span className="flex items-center gap-1">
+                        <Calendar className="w-3 h-3" />
+                        {new Date(item.createdAt).toLocaleDateString()}
+                      </span>
+                      <span className="capitalize text-[10px] px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 font-medium">
+                        {item.status}
+                      </span>
+                    </div>
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
+                  <Link
+                    href={`/solution/${item.id}`}
+                    className="p-1.5 text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
+                  >
+                    <ExternalLink className="w-4 h-4" />
+                  </Link>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
-        <div className="bg-white dark:bg-slate-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-          <div className="p-4 lg:p-6 border-b border-gray-200 dark:border-gray-700">
-            <h2 className="text-lg lg:text-xl font-semibold text-gray-900 dark:text-white flex items-center">
-              <Tag className="h-5 w-5 mr-2" />
-              Popular Tags
+        <div className="bg-white dark:bg-[#121215] rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-sm p-5 space-y-4">
+          <div className="border-b border-zinc-100 dark:border-zinc-800 pb-3">
+            <h2 className="text-base font-bold text-zinc-900 dark:text-white flex items-center gap-2">
+              <Tag className="w-4 h-4 text-zinc-500" />
+              Popular Topics
             </h2>
           </div>
-          <div className="p-4 lg:p-6">
-            {popularTags.length === 0 ? (
-              <div className="text-center py-8">
-                <Tag className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
-                <p className="text-gray-500 dark:text-gray-400">No tags yet</p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {popularTags.map(([tag, count]) => (
-                  <div key={tag} className="flex items-center justify-between flex-wrap gap-2">
-                    <Link
-                      href={`/solution?tag=${encodeURIComponent(tag)}`}
-                      className="inline-flex items-center px-2 lg:px-3 py-1 rounded-full text-xs lg:text-sm bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors"
-                    >
-                      <Tag className="h-3 w-3 mr-1" />
-                      {tag}
-                    </Link>
-                    <span className="text-xs lg:text-sm font-medium text-gray-500 dark:text-gray-400">
-                      {count} solution{count !== 1 ? 's' : ''}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+
+          {popularTags.length === 0 ? (
+            <p className="text-xs text-zinc-500 text-center py-6">No topics added yet.</p>
+          ) : (
+            <div className="space-y-2.5">
+              {popularTags.map(([tag, count]) => (
+                <div key={tag} className="flex items-center justify-between text-xs">
+                  <Link
+                    href={`/solution?tag=${encodeURIComponent(tag)}`}
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 border border-zinc-200 dark:border-zinc-700 font-medium hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
+                  >
+                    <Tag className="w-3 h-3 text-zinc-500" />
+                    #{tag}
+                  </Link>
+                  <span className="font-semibold text-zinc-500 dark:text-zinc-400">
+                    {count} note{count !== 1 ? 's' : ''}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

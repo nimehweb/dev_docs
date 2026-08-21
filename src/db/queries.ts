@@ -143,6 +143,131 @@ export async function getUserFavoriteSolutions(
   });
 }
 
+import { noteFavorites, notes } from "./schema";
+import type { NoteBlock, NoteStatus } from "@/types/note";
+
+export type NoteWithFavorite = {
+  id: string;
+  userId: string;
+  title: string;
+  summary: string;
+  status: NoteStatus;
+  tags: string[];
+  blocks: NoteBlock[];
+  createdAt: Date;
+  updatedAt: Date;
+  isFavorited: boolean;
+};
+
+export async function getNoteById(
+  noteId: string,
+  userId: string,
+): Promise<NoteWithFavorite | null> {
+  const rows = await withDbRetry(() =>
+    db
+      .select({
+        note: notes,
+        favUserId: noteFavorites.userId,
+      })
+      .from(notes)
+      .leftJoin(
+        noteFavorites,
+        and(
+          eq(noteFavorites.noteId, notes.id),
+          eq(noteFavorites.userId, userId),
+        ),
+      )
+      .where(and(eq(notes.id, noteId), eq(notes.userId, userId)))
+      .limit(1),
+  );
+
+  if (rows.length === 0) return null;
+
+  const row = rows[0];
+  const n = row.note;
+  return {
+    id: n.id,
+    userId: n.userId,
+    title: n.title,
+    summary: n.summary,
+    status: n.status as NoteStatus,
+    tags: n.tags ?? [],
+    blocks: (n.blocks as NoteBlock[]) ?? [],
+    createdAt: n.createdAt,
+    updatedAt: n.updatedAt,
+    isFavorited: row.favUserId !== null,
+  };
+}
+
+export async function getUserNotes(
+  userId: string,
+): Promise<NoteWithFavorite[]> {
+  const rows = await withDbRetry(() =>
+    db
+      .select({
+        note: notes,
+        favUserId: noteFavorites.userId,
+      })
+      .from(notes)
+      .leftJoin(
+        noteFavorites,
+        and(
+          eq(noteFavorites.noteId, notes.id),
+          eq(noteFavorites.userId, userId),
+        ),
+      )
+      .where(eq(notes.userId, userId))
+      .orderBy(desc(notes.createdAt)),
+  );
+
+  return rows.map((row) => {
+    const n = row.note;
+    return {
+      id: n.id,
+      userId: n.userId,
+      title: n.title,
+      summary: n.summary,
+      status: n.status as NoteStatus,
+      tags: n.tags ?? [],
+      blocks: (n.blocks as NoteBlock[]) ?? [],
+      createdAt: n.createdAt,
+      updatedAt: n.updatedAt,
+      isFavorited: row.favUserId !== null,
+    };
+  });
+}
+
+export async function getUserFavoriteNotes(
+  userId: string,
+): Promise<NoteWithFavorite[]> {
+  const rows = await withDbRetry(() =>
+    db
+      .select({
+        note: notes,
+      })
+      .from(noteFavorites)
+      .innerJoin(notes, eq(noteFavorites.noteId, notes.id))
+      .where(eq(noteFavorites.userId, userId))
+      .orderBy(desc(noteFavorites.createdAt)),
+  );
+
+  return rows.map((row) => {
+    const n = row.note;
+    return {
+      id: n.id,
+      userId: n.userId,
+      title: n.title,
+      summary: n.summary,
+      status: n.status as NoteStatus,
+      tags: n.tags ?? [],
+      blocks: (n.blocks as NoteBlock[]) ?? [],
+      createdAt: n.createdAt,
+      updatedAt: n.updatedAt,
+      isFavorited: true,
+    };
+  });
+}
+
 export async function getUserProfile(userId: string) {
   const [user] = await withDbRetry(() =>
     db
@@ -159,4 +284,6 @@ export async function getUserProfile(userId: string) {
 
   return user ?? null;
 }
+
+
 

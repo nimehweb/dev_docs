@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 import { getSessionUser } from '@/lib/auth'
-import { getUserSolutions } from '@/db/queries'
+import { getUserNotes, getUserSolutions, type SolutionWithFavorite } from '@/db/queries'
 import TagsContent from './TagsContent'
 
 export default async function TagsPage() {
@@ -9,7 +9,27 @@ export default async function TagsPage() {
     redirect('/login')
   }
 
-  const solutions = await getUserSolutions(userId)
+  const notes = await getUserNotes(userId)
+  const legacySolutions = await getUserSolutions(userId)
 
-  return <TagsContent solutions={solutions} />
+  // Map notes to shape expected by TagsContent
+  const notesConverted: SolutionWithFavorite[] = notes.map((n) => ({
+    id: n.id,
+    userId: n.userId,
+    title: n.title,
+    description: n.summary,
+    problemDescription: '',
+    solutionSteps: '',
+    status: 'resolved',
+    difficulty: 'easy',
+    tags: n.tags,
+    codeSnippets: [],
+    createdAt: n.createdAt,
+    updatedAt: n.updatedAt,
+    isFavorited: n.isFavorited,
+  }))
+
+  const combined = [...notesConverted, ...legacySolutions]
+
+  return <TagsContent solutions={combined} />
 }

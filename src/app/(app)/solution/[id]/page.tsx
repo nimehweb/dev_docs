@@ -1,13 +1,14 @@
 import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
-import { ArrowLeft, Calendar, Tag } from 'lucide-react'
-import { getSessionUser } from '@/lib/auth'
-import { getSolutionById } from '@/db/queries'
-import MarkdownRenderer from '../_components/MarkdownRenderer'
-import CodeSnippet from '../_components/CodeSnippet'
-import SolutionHeaderActions from './SolutionHeaderActions'
+import { ArrowLeft, Calendar, Tag as TagIcon } from 'lucide-react'
 
-export default async function SolutionDetailsPage({
+import { getSessionUser } from '@/lib/auth'
+import { getNoteById, getSolutionById } from '@/db/queries'
+import BlockRenderer from '@/components/note/BlockRenderer'
+import TableOfContents from '@/components/note/TableOfContents'
+import NoteHeaderActions from '@/components/note/NoteHeaderActions'
+
+export default async function NoteDetailsPage({
   params,
 }: {
   params: Promise<{ id: string }>
@@ -18,90 +19,166 @@ export default async function SolutionDetailsPage({
   }
 
   const { id } = await params
-  const solution = await getSolutionById(id, userId)
+  
+  // Try note query first
+  const note = await getNoteById(id, userId)
 
-  if (!solution) {
-    notFound()
+  if (!note) {
+    // Fallback to legacy solution lookup if note is not found
+    const solution = await getSolutionById(id, userId)
+    if (!solution) {
+      notFound()
+    }
+
+    // Convert legacy solution to Note shape for uniform reading view
+    const convertedBlocks = [
+      ...(solution.description ? [{ id: 'desc', type: 'paragraph' as const, content: solution.description }] : []),
+      ...(solution.problemDescription
+        ? [
+            { id: 'h-prob', type: 'heading' as const, level: 2 as const, text: 'Problem Description' },
+            { id: 'prob', type: 'paragraph' as const, content: solution.problemDescription },
+          ]
+        : []),
+      ...(solution.solutionSteps
+        ? [
+            { id: 'h-sol', type: 'heading' as const, level: 2 as const, text: 'Solution Steps' },
+            { id: 'sol', type: 'paragraph' as const, content: solution.solutionSteps },
+          ]
+        : []),
+      ...solution.codeSnippets.map((cs, idx) => ({
+        id: `cs-${idx}`,
+        type: 'code' as const,
+        title: cs.title,
+        language: cs.language,
+        code: cs.code,
+      })),
+    ]
+
+    return (
+      <div className="p-4 lg:p-8 max-w-5xl mx-auto space-y-8">
+        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-gray-100 dark:border-gray-800 pb-4">
+          <Link
+            href="/solution"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Back to Library</span>
+          </Link>
+
+          <NoteHeaderActions noteId={solution.id} initialIsFavorited={solution.isFavorited} />
+        </div>
+
+        <div className="space-y-4">
+          <div className="flex flex-wrap items-center gap-2 text-xs">
+            <span className="px-2.5 py-1 rounded-md font-semibold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 uppercase tracking-wider">
+              Published
+            </span>
+            <span className="flex items-center gap-1 text-gray-500 dark:text-gray-400">
+              <Calendar className="w-3.5 h-3.5" />
+              {new Date(solution.createdAt).toLocaleDateString()}
+            </span>
+          </div>
+
+          <h1 className="text-3xl lg:text-4xl font-extrabold text-gray-900 dark:text-white leading-tight">
+            {solution.title}
+          </h1>
+
+          {solution.tags.length > 0 && (
+            <div className="flex flex-wrap gap-2 pt-2">
+              {solution.tags.map((tag) => (
+                <Link
+                  key={tag}
+                  href={`/solution?tag=${encodeURIComponent(tag)}`}
+                  className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-md bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-950 hover:text-blue-600 transition-colors"
+                >
+                  <TagIcon className="w-3 h-3" />
+                  <span>#{tag}</span>
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          <div className="lg:col-span-3">
+            <BlockRenderer blocks={convertedBlocks} />
+          </div>
+          <div className="lg:col-span-1">
+            <TableOfContents blocks={convertedBlocks} />
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
-    <div className="p-4 lg:p-6">
-      <div className="flex justify-between items-center mb-6">
-        <Link href="/solution" className="flex items-center text-blue-600 hover:underline cursor-pointer">
-          <ArrowLeft className="mr-2" /> Back to Solutions
+    <div className="p-4 lg:p-8 max-w-5xl mx-auto space-y-8">
+      {/* Top navigation & action header */}
+      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-gray-100 dark:border-gray-800 pb-4">
+        <Link
+          href="/solution"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          <span>Back to Library</span>
         </Link>
-        <SolutionHeaderActions
-          solutionId={solution.id}
-          initialIsFavorited={solution.isFavorited}
-        />
+
+        <NoteHeaderActions noteId={note.id} initialIsFavorited={note.isFavorited} />
       </div>
 
-      <div className="flex justify-between items-center">
-        <h1 className="text-xl lg:text-2xl font-bold mb-2 pr-4">{solution.title}</h1>
-        <div className="flex gap-2 lg:gap-4 mb-4 flex-shrink-0">
+      {/* Article Header */}
+      <div className="space-y-4">
+        <div className="flex flex-wrap items-center gap-2 text-xs">
           <span
-            className={`py-1 px-2 lg:px-3 rounded-lg text-xs lg:text-sm ${
-              solution.status === 'resolved'
-                ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                : 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200'
+            className={`px-2.5 py-1 rounded-md font-semibold border uppercase tracking-wider ${
+              note.status === 'published'
+                ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800'
+                : 'bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800'
             }`}
           >
-            {solution.status}
+            {note.status}
           </span>
-          <span className="px-2 lg:px-3 py-1 bg-slate-200 dark:bg-slate-500 rounded-lg text-xs lg:text-sm">
-            {solution.difficulty}
+          <span className="flex items-center gap-1 text-gray-500 dark:text-gray-400">
+            <Calendar className="w-3.5 h-3.5" />
+            {new Date(note.createdAt).toLocaleDateString()}
           </span>
         </div>
-      </div>
 
-      <p className="text-gray-900 dark:text-white mb-4 text-base lg:text-lg">{solution.description}</p>
+        <h1 className="text-3xl lg:text-4xl font-extrabold text-gray-900 dark:text-white leading-tight">
+          {note.title}
+        </h1>
 
-      <div className="text-xs lg:text-sm text-gray-500 flex gap-2 items-center mb-2">
-        <Calendar className="size-3 lg:size-4" /> <p>Created: {new Date(solution.createdAt).toLocaleDateString()}</p>
-      </div>
-
-      <section className="mb-4">
-        {solution.tags.map((tag) => (
-          <Link
-            key={tag}
-            href={`/solution?tag=${encodeURIComponent(tag)}`}
-            className="inline-block text-xs lg:text-sm px-2 lg:px-3 py-1 rounded-full mr-2 mb-2 border border-gray-400 hover:bg-blue-50 dark:hover:bg-blue-900 hover:border-blue-300 dark:hover:border-blue-600 hover:text-blue-700 dark:hover:text-blue-300 cursor-pointer transition-colors"
-          >
-            <Tag className="inline-block size-2 lg:size-3 mr-1" />
-            {tag}
-          </Link>
-        ))}
-      </section>
-
-      {solution.problemDescription && (
-        <section className="mb-6 mt-4">
-          <h2 className="text-base lg:text-lg font-semibold mb-2">Problem Description</h2>
-          <MarkdownRenderer content={solution.problemDescription} />
-        </section>
-      )}
-
-      {solution.solutionSteps && (
-        <section className="mb-6">
-          <h2 className="text-base lg:text-lg font-semibold mb-2">Solution Steps</h2>
-          <MarkdownRenderer content={solution.solutionSteps} />
-        </section>
-      )}
-
-      <section className="mb-6">
-        <h2 className="text-base lg:text-lg font-semibold mb-2">Code Snippets</h2>
-        {solution.codeSnippets.length === 0 ? (
-          <p className="text-sm lg:text-base text-gray-500">No code snippets added.</p>
-        ) : (
-          solution.codeSnippets.map((snippet, idx) => (
-            <CodeSnippet
-              key={idx}
-              title={snippet.title || `Snippet #${idx + 1}`}
-              language={snippet.language}
-              code={snippet.code}
-            />
-          ))
+        {note.summary && (
+          <p className="text-base lg:text-lg text-gray-600 dark:text-gray-300 leading-relaxed italic border-l-2 border-blue-500 pl-4 py-1">
+            {note.summary}
+          </p>
         )}
-      </section>
+
+        {note.tags.length > 0 && (
+          <div className="flex flex-wrap gap-2 pt-2">
+            {note.tags.map((tag) => (
+              <Link
+                key={tag}
+                href={`/solution?tag=${encodeURIComponent(tag)}`}
+                className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-md bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-950 hover:text-blue-600 transition-colors"
+              >
+                <TagIcon className="w-3 h-3" />
+                <span>#{tag}</span>
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Main Content Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        <div className="lg:col-span-3">
+          <BlockRenderer blocks={note.blocks} />
+        </div>
+        <div className="lg:col-span-1">
+          <TableOfContents blocks={note.blocks} />
+        </div>
+      </div>
     </div>
   )
 }

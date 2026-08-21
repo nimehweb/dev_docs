@@ -1,8 +1,8 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import { Heart, Calendar, Tag, ExternalLink } from 'lucide-react'
+import { Calendar, ExternalLink, Star, Tag } from 'lucide-react'
 import { getSessionUser } from '@/lib/auth'
-import { getUserFavoriteSolutions } from '@/db/queries'
+import { getUserFavoriteNotes, getUserFavoriteSolutions, type NoteWithFavorite } from '@/db/queries'
 
 export default async function FavoritesPage() {
   const userId = await getSessionUser()
@@ -10,101 +10,113 @@ export default async function FavoritesPage() {
     redirect('/login')
   }
 
-  const favoriteSolutions = await getUserFavoriteSolutions(userId)
+  const favNotes = await getUserFavoriteNotes(userId)
+  const favSolutions = await getUserFavoriteSolutions(userId)
+
+  const legacyFavConverted: NoteWithFavorite[] = favSolutions.map((s) => ({
+    id: s.id,
+    userId: s.userId,
+    title: s.title,
+    summary: s.description,
+    status: 'published' as const,
+    tags: s.tags,
+    blocks: [],
+    createdAt: s.createdAt,
+    updatedAt: s.updatedAt,
+    isFavorited: true,
+  }))
+
+  const allFavoritesCombined = [...favNotes, ...legacyFavConverted]
 
   return (
-    <div className="p-6 bg-gray-50 dark:bg-slate-800 min-h-full">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2 flex items-center gap-3">
-          <Heart className="size-8 text-red-500 fill-current" />
-          Favorites
-        </h1>
-        <p className="text-gray-600 dark:text-gray-300">
-          Your starred solutions for quick access
-        </p>
-      </div>
-
-      <div className="mb-6">
-        <div className="bg-white dark:bg-slate-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Favorites</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{favoriteSolutions.length}</p>
-            </div>
-            <Heart className="size-8 text-red-500 fill-current" />
-          </div>
+    <div className="p-4 lg:p-8 max-w-6xl mx-auto space-y-6">
+      <div className="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 pb-5">
+        <div>
+          <h1 className="text-2xl lg:text-3xl font-extrabold text-zinc-900 dark:text-white flex items-center gap-2">
+            <Star className="w-7 h-7 fill-current text-zinc-900 dark:text-white" />
+            Starred Notes
+          </h1>
+          <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">
+            Your collection of favorited developer notes for fast reference
+          </p>
         </div>
       </div>
 
-      <div className="space-y-6">
-        {favoriteSolutions.length === 0 ? (
-          <div className="bg-white dark:bg-slate-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-12 text-center">
-            <Heart className="size-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No favorites yet</h3>
-            <p className="text-gray-500 dark:text-gray-400 mb-4">
-              Start marking solutions as favorites by clicking the heart icon when viewing solutions.
-            </p>
-            <Link
-              href="/solution"
-              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+      <div className="bg-white dark:bg-[#121215] p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-sm flex items-center justify-between">
+        <div>
+          <p className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+            Total Starred Notes
+          </p>
+          <p className="text-2xl font-extrabold text-zinc-900 dark:text-white mt-1">
+            {allFavoritesCombined.length}
+          </p>
+        </div>
+        <Star className="w-8 h-8 fill-current text-zinc-900 dark:text-white" />
+      </div>
+
+      {allFavoritesCombined.length === 0 ? (
+        <div className="text-center py-16 bg-white dark:bg-[#121215] rounded-xl border border-dashed border-zinc-300 dark:border-zinc-800 space-y-3">
+          <Star className="w-12 h-12 text-zinc-300 dark:text-zinc-600 mx-auto" />
+          <h3 className="text-base font-bold text-zinc-900 dark:text-white">No starred notes yet</h3>
+          <p className="text-xs text-zinc-500 dark:text-zinc-400">
+            Click the star icon when viewing notes to save them here for quick access.
+          </p>
+          <Link
+            href="/solution"
+            className="inline-flex items-center px-4 py-2 bg-black text-white dark:bg-white dark:text-black rounded-lg text-xs font-bold transition-colors"
+          >
+            Browse Library
+          </Link>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {allFavoritesCombined.map((note) => (
+            <div
+              key={note.id}
+              className="bg-white dark:bg-[#121215] p-5 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-sm hover:shadow-md transition-all flex flex-col justify-between space-y-4"
             >
-              Browse Solutions
-            </Link>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {favoriteSolutions.map((solution) => (
-              <div
-                key={solution.id}
-                className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-gray-700 px-6 py-6 rounded-lg shadow-sm hover:shadow-md transition-shadow"
-              >
-                <div className="flex justify-between items-start mb-4">
-                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{solution.title}</h2>
-                  <div className="flex gap-2 items-center">
-                    <span
-                      className={`py-1 px-3 rounded-lg text-sm font-medium ${
-                        solution.status === 'resolved'
-                          ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                          : 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200'
-                      }`}
-                    >
-                      {solution.status}
-                    </span>
-                    <span className="py-1 px-3 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium">
-                      {solution.difficulty}
-                    </span>
-                    <Link href={`/solution/${solution.id}`}>
-                      <span className="p-2 border border-gray-300 dark:border-gray-600 rounded-lg flex items-center justify-center hover:bg-gray-50 dark:hover:bg-slate-800 cursor-pointer transition-colors">
-                        <ExternalLink className="size-4" />
-                      </span>
-                    </Link>
-                  </div>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded border border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100">
+                    {note.status}
+                  </span>
+                  <Star className="w-4 h-4 fill-current text-zinc-900 dark:text-white" />
                 </div>
 
-                <p className="text-gray-600 dark:text-gray-300 text-lg mb-4">{solution.description}</p>
+                <Link href={`/solution/${note.id}`} className="block hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors">
+                  <h3 className="text-lg font-bold text-zinc-900 dark:text-white line-clamp-2">
+                    {note.title}
+                  </h3>
+                </Link>
 
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {solution.tags.map((tag, tagIndex) => (
-                    <Link
-                      key={tagIndex}
-                      href={`/solution?tag=${encodeURIComponent(tag)}`}
-                      className="inline-flex items-center text-xs px-2 py-1 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900 hover:border-blue-300 dark:hover:border-blue-600 hover:text-blue-700 dark:hover:text-blue-300 transition-colors cursor-pointer"
+                {note.summary && (
+                  <p className="text-xs text-zinc-600 dark:text-zinc-300 line-clamp-2 leading-relaxed">
+                    {note.summary}
+                  </p>
+                )}
+              </div>
+
+              <div className="pt-3 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400">
+                <div className="flex flex-wrap items-center gap-1.5">
+                  {note.tags.map((t) => (
+                    <span
+                      key={t}
+                      className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 text-[11px] font-medium border border-zinc-200 dark:border-zinc-700"
                     >
-                      <Tag className="size-3 mr-1" />
-                      {tag}
-                    </Link>
+                      <Tag className="w-2.5 h-2.5" />
+                      #{t}
+                    </span>
                   ))}
                 </div>
 
-                <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
-                  <Calendar className="size-4 mr-2" />
-                  <span>Created: {new Date(solution.createdAt).toLocaleDateString()}</span>
-                </div>
+                <Link href={`/solution/${note.id}`} className="p-1 hover:text-zinc-900 dark:hover:text-white">
+                  <ExternalLink className="w-4 h-4" />
+                </Link>
               </div>
-            ))}
-          </div>
-        )}
-      </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }
